@@ -3,6 +3,6 @@ services:
     name: pingflow-api
     runtime: docker
     rootDir: backend
-    plan: starter
+    plan: free
     healthCheckPath: /health
     autoDeploy: true
