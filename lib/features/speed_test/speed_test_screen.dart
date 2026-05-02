@@ -97,6 +97,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
     final activeSpeed = _progress.phase == SpeedTestPhase.upload
         ? _progress.uploadMbps
         : _progress.downloadMbps;
+    final quality = _connectionQuality(strings, _progress.pingMs);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -144,7 +145,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                             child: Padding(
                               padding: EdgeInsets.only(top: isShort ? 0 : 8),
                               child: Transform.translate(
-                                offset: Offset(0, isShort ? -24 : -34),
+                                offset: Offset(0, isShort ? 36 : 44),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -174,11 +175,17 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                                       overflow: TextOverflow.ellipsis,
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        color: context.pfColors.textMuted,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w700,
+                                        color: _phaseColor(_progress.phase),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w900,
                                       ),
                                     ),
+                                    if (showValues &&
+                                        _progress.phase !=
+                                            SpeedTestPhase.idle) ...[
+                                      const SizedBox(height: 6),
+                                      _QualityChip(quality: quality),
+                                    ],
                                   ],
                                 ),
                               ),
@@ -213,7 +220,10 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                           value: showValues
                               ? '${_progress.downloadMbps.toStringAsFixed(1)} Mbps'
                               : '--',
-                          color: AppColors.purple,
+                          color: showValues
+                              ? _speedColor(_progress.downloadMbps)
+                              : null,
+                          emphasized: true,
                           samples: _downloadSamples,
                         ),
                         _SpeedMetricCard(
@@ -222,7 +232,9 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                           value: showValues
                               ? '${_progress.uploadMbps.toStringAsFixed(1)} Mbps'
                               : '--',
-                          color: AppColors.accent,
+                          color: showValues
+                              ? _speedColor(_progress.uploadMbps)
+                              : null,
                           samples: _uploadSamples,
                         ),
                       ],
@@ -244,14 +256,23 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                         _CompactMetricCard(
                           label: strings.ping,
                           value: showValues ? '${_progress.pingMs} ms' : '--',
+                          color: showValues
+                              ? _latencyColor(_progress.pingMs)
+                              : null,
                         ),
                         _CompactMetricCard(
                           label: strings.jitter,
-                          value: showValues ? '${_progress.jitterMs} ms' : '--',
+                          value: showValues && _progress.jitterMs > 0
+                              ? '${_progress.jitterMs} ms'
+                              : '--',
+                          color: showValues && _progress.jitterMs > 0
+                              ? _latencyColor(_progress.jitterMs)
+                              : null,
                         ),
                         _CompactMetricCard(
                           label: strings.loss,
                           value: showValues ? '0%' : '--',
+                          color: showValues ? AppColors.accent : null,
                         ),
                       ],
                     ),
@@ -269,8 +290,12 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 680),
             child: PrimaryButton(
-              label: _running ? strings.stopTest : strings.startTest,
-              icon: _running ? Icons.stop_rounded : Icons.play_arrow_rounded,
+              label: _buttonLabel(strings),
+              icon: _running
+                  ? Icons.stop_rounded
+                  : result != null
+                      ? Icons.restart_alt_rounded
+                      : Icons.play_arrow_rounded,
               color: _running ? AppColors.danger : AppColors.primary,
               onPressed: _running ? _stop : _start,
             ),
@@ -291,6 +316,50 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
     };
   }
 
+  String _buttonLabel(AppStrings strings) {
+    if (_running) return strings.stopTest;
+    if (_result != null) return strings.restartTest;
+    return strings.startTest;
+  }
+
+  Color _phaseColor(SpeedTestPhase phase) {
+    return switch (phase) {
+      SpeedTestPhase.download => AppColors.primary,
+      SpeedTestPhase.upload => AppColors.accent,
+      SpeedTestPhase.complete => AppColors.accent,
+      SpeedTestPhase.ping => AppColors.warning,
+      SpeedTestPhase.idle => context.pfColors.textMuted,
+    };
+  }
+
+  Color _speedColor(double value) {
+    if (value >= 25) return AppColors.accent;
+    if (value >= 10) return AppColors.warning;
+    return AppColors.danger;
+  }
+
+  Color _latencyColor(int value) {
+    if (value <= 120) return AppColors.accent;
+    if (value <= 300) return AppColors.warning;
+    return AppColors.danger;
+  }
+
+  _ConnectionQuality _connectionQuality(AppStrings strings, int ping) {
+    if (ping <= 0) {
+      return _ConnectionQuality(strings.testing, AppColors.primary);
+    }
+    if (ping <= 80) {
+      return _ConnectionQuality(strings.excellentConnection, AppColors.accent);
+    }
+    if (ping <= 180) {
+      return _ConnectionQuality(strings.goodConnection, AppColors.accent);
+    }
+    if (ping <= 320) {
+      return _ConnectionQuality(strings.fairConnection, AppColors.warning);
+    }
+    return _ConnectionQuality(strings.poorConnection, AppColors.danger);
+  }
+
   void _pushSample(List<double> samples, double value) {
     samples.add(value);
     if (samples.length > 18) samples.removeAt(0);
@@ -304,16 +373,20 @@ class _SpeedMetricCard extends StatelessWidget {
     required this.value,
     required this.color,
     required this.samples,
+    this.emphasized = false,
   });
 
   final IconData icon;
   final String label;
   final String value;
-  final Color color;
+  final Color? color;
   final List<double> samples;
+  final bool emphasized;
 
   @override
   Widget build(BuildContext context) {
+    final accentColor = color ?? context.pfColors.textMuted;
+
     return Container(
       height: 94,
       padding: const EdgeInsets.all(10),
@@ -321,13 +394,20 @@ class _SpeedMetricCard extends StatelessWidget {
         color: context.pfColors.card,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: context.pfColors.stroke),
+        boxShadow: [
+          BoxShadow(
+            color: context.pfColors.textPrimary.withValues(alpha: 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: color, size: 14),
+              Icon(icon, color: accentColor, size: 14),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
@@ -350,14 +430,18 @@ class _SpeedMetricCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w900,
-              ).copyWith(color: context.pfColors.textPrimary),
+              ).copyWith(
+                color: emphasized && color != null
+                    ? color
+                    : context.pfColors.textPrimary,
+              ),
             ),
           ),
           const Spacer(),
           SizedBox(
             height: 22,
             child: CustomPaint(
-              painter: _SparklinePainter(samples, color),
+              painter: _SparklinePainter(samples, accentColor),
               child: const SizedBox.expand(),
             ),
           ),
@@ -368,10 +452,12 @@ class _SpeedMetricCard extends StatelessWidget {
 }
 
 class _CompactMetricCard extends StatelessWidget {
-  const _CompactMetricCard({required this.label, required this.value});
+  const _CompactMetricCard(
+      {required this.label, required this.value, this.color});
 
   final String label;
   final String value;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -382,6 +468,13 @@ class _CompactMetricCard extends StatelessWidget {
         color: context.pfColors.card,
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: context.pfColors.stroke),
+        boxShadow: [
+          BoxShadow(
+            color: context.pfColors.textPrimary.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 7),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -404,10 +497,43 @@ class _CompactMetricCard extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w900,
-              ).copyWith(color: context.pfColors.textPrimary),
+              ).copyWith(color: color ?? context.pfColors.textPrimary),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ConnectionQuality {
+  const _ConnectionQuality(this.label, this.color);
+
+  final String label;
+  final Color color;
+}
+
+class _QualityChip extends StatelessWidget {
+  const _QualityChip({required this.quality});
+
+  final _ConnectionQuality quality;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: quality.color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: quality.color.withValues(alpha: 0.24)),
+      ),
+      child: Text(
+        quality.label,
+        style: TextStyle(
+          color: quality.color,
+          fontSize: 10,
+          fontWeight: FontWeight.w900,
+        ),
       ),
     );
   }

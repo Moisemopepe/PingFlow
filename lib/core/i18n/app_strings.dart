@@ -124,6 +124,10 @@ class AppStrings {
   String get heroSubtitle => isFrench
       ? 'Tous les outils pour analyser et depanner votre reseau.'
       : 'All-in-one tools for network analysis and troubleshooting.';
+  String get networkOnline => isFrench ? 'Connecte' : 'Connected';
+  String get checkingNetwork =>
+      isFrench ? 'Verification reseau' : 'Checking network';
+  String get serverReady => isFrench ? 'Serveur pret' : 'Server ready';
 
   String get enterHost =>
       isFrench ? 'Entrer IP ou domaine' : 'Enter IP or domain';
@@ -204,12 +208,21 @@ class AppStrings {
   String get ready => isFrench ? 'Pret' : 'Ready';
   String get measuringPingJitter => isFrench ? 'Latence...' : 'Latency...';
   String get measuringDownload =>
-      isFrench ? 'Mesure du download' : 'Measuring download';
+      isFrench ? 'Test download...' : 'Testing Download...';
   String get measuringUpload =>
-      isFrench ? 'Mesure de l upload' : 'Measuring upload';
+      isFrench ? 'Test upload...' : 'Testing Upload...';
   String get completed => isFrench ? 'Termine' : 'Completed';
   String get startTest => isFrench ? 'Demarrer le test' : 'Start Test';
+  String get testing => isFrench ? 'Test en cours' : 'Testing';
+  String get restartTest => isFrench ? 'Recommencer' : 'Restart';
   String get stopTest => isFrench ? 'Arreter le test' : 'Stop Test';
+  String get poorConnection =>
+      isFrench ? 'Connexion faible' : 'Poor connection';
+  String get fairConnection =>
+      isFrench ? 'Connexion moyenne' : 'Fair connection';
+  String get goodConnection => isFrench ? 'Bonne connexion' : 'Good connection';
+  String get excellentConnection =>
+      isFrench ? 'Excellente connexion' : 'Excellent connection';
   String get speedTestFailed => isFrench
       ? 'Le test de vitesse a echoue. Verifiez votre connexion et l API backend.'
       : 'Speed test failed. Check your connection and backend API.';

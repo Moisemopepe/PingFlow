@@ -27,14 +27,6 @@ class DashboardScreen extends StatelessWidget {
           onPressed: () {},
         ),
         title: const _BrandTitle(),
-        actions: [
-          IconButton(
-            tooltip: strings.premium,
-            icon: const Icon(Icons.workspace_premium_rounded,
-                color: AppColors.warning),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: ListenableBuilder(
         listenable: history,
@@ -42,15 +34,17 @@ class DashboardScreen extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
             children: [
+              const _NetworkStatusPill(),
+              const SizedBox(height: 18),
               const _HeroHeader(),
-              const SizedBox(height: 22),
+              const SizedBox(height: 24),
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisCount: 2,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
-                childAspectRatio: 1.02,
+                childAspectRatio: 1.12,
                 children: [
                   _ToolCard(
                     title: strings.ping,
@@ -82,15 +76,22 @@ class DashboardScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 28),
               SectionTitle(
                 strings.recentTests,
                 action: TextButton(
                   onPressed: () {},
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    textStyle: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
                   child: Text(strings.seeAll),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
               ...history.items.take(3).map(_RecentTestTile.new),
             ],
           );
@@ -101,6 +102,67 @@ class DashboardScreen extends StatelessWidget {
 
   void _open(BuildContext context, Widget screen) {
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => screen));
+  }
+}
+
+class _NetworkStatusPill extends StatelessWidget {
+  const _NetworkStatusPill();
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
+    final colors = context.pfColors;
+    return FutureBuilder(
+      future: AppDependencies.of(context).diagnosticService.networkInfo(),
+      builder: (context, snapshot) {
+        final info = snapshot.data;
+        final connected = info?.backendStatus == 'Connected';
+        final status = info == null
+            ? strings.checkingNetwork
+            : '${strings.networkOnline} • ${info.networkType} • ${connected ? strings.serverReady : info.backendStatus}';
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: colors.card,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: colors.stroke),
+            boxShadow: [
+              BoxShadow(
+                color: colors.textPrimary.withValues(alpha: 0.06),
+                blurRadius: 14,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                connected || info == null
+                    ? Icons.wifi_tethering_rounded
+                    : Icons.wifi_off_rounded,
+                color: connected || info == null
+                    ? AppColors.accent
+                    : AppColors.warning,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  status,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: colors.textSecondary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -130,41 +192,24 @@ class _HeroHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final strings = AppStrings.of(context);
     final colors = context.pfColors;
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                strings.heroTitle,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      height: 1.02,
-                      fontWeight: FontWeight.w900,
-                    ),
+        Text(
+          strings.heroTitle,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                height: 1.02,
+                fontWeight: FontWeight.w900,
               ),
-              const SizedBox(height: 10),
-              Text(
-                strings.heroSubtitle,
-                style: TextStyle(color: colors.textSecondary),
-              ),
-            ],
-          ),
         ),
-        Container(
-          width: 116,
-          height: 116,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [
-                AppColors.primary.withValues(alpha: 0.55),
-                AppColors.primary.withValues(alpha: 0.08),
-                colors.background.withValues(alpha: 0),
-              ],
-            ),
+        const SizedBox(height: 10),
+        Text(
+          strings.heroSubtitle,
+          style: TextStyle(
+            color: colors.textSecondary,
+            fontWeight: FontWeight.w700,
+            height: 1.35,
           ),
-          child: const Icon(Icons.public_rounded, size: 72),
         ),
       ],
     );
@@ -199,14 +244,19 @@ class _ToolCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 38),
-          const SizedBox(height: 12),
+          Icon(icon, color: color, size: 34),
+          const SizedBox(height: 10),
           Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(color: colors.textSecondary, fontSize: 12),
+            style: TextStyle(
+              color: colors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              height: 1.25,
+            ),
           ),
         ],
       ),
@@ -248,8 +298,13 @@ class _RecentTestTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item.title,
-                      style: const TextStyle(fontWeight: FontWeight.w700)),
+                  Text(
+                    item.title,
+                    style: TextStyle(
+                      color: colors.textPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                   const SizedBox(height: 2),
                   Text(
                     item.subtitle,
@@ -260,7 +315,11 @@ class _RecentTestTile extends StatelessWidget {
             ),
             Text(
               item.result,
-              style: TextStyle(color: color, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w900,
+                fontSize: 14,
+              ),
             ),
           ],
         ),
