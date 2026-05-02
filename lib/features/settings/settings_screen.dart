@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../app/pingflow_app.dart';
 import '../../core/constants/app_colors.dart';
@@ -88,12 +89,18 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                     _SettingRow(
-                      icon: Icons.star_rounded,
-                      title: strings.rateUs,
+                      icon: Icons.privacy_tip_outlined,
+                      title: strings.privacyPolicy,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const PrivacyPolicyScreen(),
+                        ),
+                      ),
                     ),
                     _SettingRow(
                       icon: Icons.share_rounded,
                       title: strings.shareApp,
+                      onTap: () => Share.share(strings.shareAppText),
                     ),
                   ],
                 ),
@@ -139,9 +146,80 @@ class AboutPingFlowScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 _AboutVersionRow(label: strings.version),
-                _AboutRow(label: strings.developer, value: 'MOPEPE / PingFlow'),
-                _AboutRow(
-                    label: strings.backend, value: 'Node.js diagnostics API'),
+                _AboutRow(label: strings.developer, value: 'Moise Mopepe'),
+                const SizedBox(height: 18),
+                Text(
+                  strings.features,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ...strings.featureItems.map(
+                  (feature) => Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: Text(
+                      '- $feature',
+                      style: const TextStyle(color: AppColors.textSecondary),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  strings.builtWithFlutter,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  strings.copyright,
+                  style: const TextStyle(color: AppColors.textMuted),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class PrivacyPolicyScreen extends StatelessWidget {
+  const PrivacyPolicyScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
+    return Scaffold(
+      appBar: AppBar(title: Text(strings.privacyPolicy)),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          PfCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.privacy_tip_outlined,
+                  color: AppColors.primary,
+                  size: 34,
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  strings.privacyPolicy,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  strings.privacyDescription,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
+                ),
               ],
             ),
           ),

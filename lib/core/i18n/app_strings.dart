@@ -37,14 +37,42 @@ class AppStrings {
   String get about => isFrench ? 'A propos' : 'About';
   String get aboutPingFlow =>
       isFrench ? 'A propos de PingFlow' : 'About PingFlow';
-  String get rateUs => isFrench ? 'Nous noter' : 'Rate us';
+  String get privacyPolicy =>
+      isFrench ? 'Politique de confidentialite' : 'Privacy Policy';
   String get shareApp => isFrench ? 'Partager l app' : 'Share App';
   String get version => isFrench ? 'Version' : 'Version';
   String get developer => isFrench ? 'Developpeur' : 'Developer';
   String get backend => isFrench ? 'API backend' : 'Backend';
   String get aboutDescription => isFrench
-      ? 'Outil moderne de diagnostic reseau pour mesurer la latence, les sauts de route, les details de connexion et la vitesse de transfert avec de vrais appels reseau.'
-      : 'Modern network diagnostic tool for measuring latency, route hops, connection details, and transfer speed using real network calls.';
+      ? 'PingFlow est un outil moderne de diagnostic reseau concu pour analyser la connectivite et les performances en temps reel.\n\nMesurez la latence (ping), visualisez les chemins reseau (traceroute), testez la vitesse de connexion et surveillez votre reseau facilement.'
+      : 'PingFlow is a modern network diagnostic tool designed to analyze connectivity and performance in real time.\n\nMeasure latency (ping), visualize network paths (traceroute), test connection speed, and monitor network conditions with accuracy and ease.';
+  String get features => isFrench ? 'Fonctionnalites' : 'Features';
+  List<String> get featureItems => isFrench
+      ? const [
+          'Test de latence (Ping)',
+          'Analyse de route (Traceroute)',
+          'Test de debit',
+          'Informations reseau',
+          'Historique des tests',
+        ]
+      : const [
+          'Ping (Latency Test)',
+          'Traceroute (Route Analysis)',
+          'Speed Test',
+          'Network Information',
+          'Test History',
+        ];
+  String get builtWithFlutter =>
+      isFrench ? 'Developpe avec Flutter' : 'Built with Flutter';
+  String get copyright => isFrench
+      ? '© 2026 Moise Mopepe. Tous droits reserves.'
+      : '© 2026 Moise Mopepe. All rights reserved.';
+  String get shareAppText => isFrench
+      ? 'Decouvrez PingFlow, un outil moderne de diagnostic reseau : https://play.google.com/store/apps/details?id=com.pingflow.app'
+      : 'Check out PingFlow, a modern network diagnostic tool: https://play.google.com/store/apps/details?id=com.pingflow.app';
+  String get privacyDescription => isFrench
+      ? 'PingFlow respecte votre vie privee. L application ne collecte pas d informations personnelles. Les tests de diagnostic reseau sont effectues uniquement pour mesurer la connectivite, la latence, les sauts de route et la vitesse de connexion. Certains tests peuvent utiliser une API backend pour traiter les diagnostics reseau. Aucune donnee personnelle n est vendue ou partagee.'
+      : 'PingFlow respects your privacy. The app does not collect personal information. Network diagnostic tests are performed only to measure connectivity, latency, route hops, and connection speed. Some tests may use a backend API to process network diagnostics. No personal data is sold or shared.';
 
   String get clearHistory => isFrench ? 'Effacer historique' : 'Clear history';
   String get deleteAllHistory =>

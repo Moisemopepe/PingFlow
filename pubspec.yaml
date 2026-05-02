@@ -1,7 +1,7 @@
 name: pingflow
 description: A modern network diagnostic tool for Android.
 publish_to: "none"
-version: 0.2.1+10
+version: 0.2.2+11
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -15,6 +15,7 @@ dependencies:
   connectivity_plus: ^6.1.5
   path: ^1.9.1
   package_info_plus: ^8.3.1
+  share_plus: ^10.1.4
   shared_preferences: ^2.5.3
   sqflite: ^2.4.2
 
