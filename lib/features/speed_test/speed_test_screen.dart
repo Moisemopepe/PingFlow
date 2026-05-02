@@ -111,106 +111,154 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(8, 0, 8, 18),
-        children: [
-          SizedBox(
-            height: 300,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween<double>(end: activeSpeed),
-              duration: const Duration(milliseconds: 350),
-              curve: Curves.easeOutCubic,
-              builder: (context, animatedSpeed, _) {
-                return CustomPaint(
-                  painter: _GaugePainter(animatedSpeed),
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 66),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            showValues
-                                ? animatedSpeed.toStringAsFixed(1)
-                                : '--',
-                            style: const TextStyle(
-                              fontSize: 36,
-                              height: 1,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.textPrimary,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 700;
+          final isShort = constraints.maxHeight < 760;
+          final gaugeHeight = isWide ? 320.0 : (isShort ? 230.0 : 252.0);
+          final contentWidth = isWide ? 680.0 : double.infinity;
+
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: contentWidth),
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(
+                  isWide ? 22 : 12,
+                  0,
+                  isWide ? 22 : 12,
+                  18,
+                ),
+                children: [
+                  SizedBox(
+                    height: gaugeHeight,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween<double>(end: activeSpeed),
+                      duration: const Duration(milliseconds: 350),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, animatedSpeed, _) {
+                        return CustomPaint(
+                          painter: _GaugePainter(animatedSpeed),
+                          child: Center(
+                            child: Padding(
+                              padding: EdgeInsets.only(top: isShort ? 42 : 54),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    showValues
+                                        ? animatedSpeed.toStringAsFixed(1)
+                                        : '--',
+                                    style: TextStyle(
+                                      fontSize: isShort ? 32 : 36,
+                                      height: 1,
+                                      fontWeight: FontWeight.w900,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  const Text(
+                                    'Mbps',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _phaseLabel(_progress.phase),
+                                    style: const TextStyle(
+                                      color: AppColors.textMuted,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 3),
-                          const Text(
-                            'Mbps',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            _phaseLabel(_progress.phase),
-                            style: const TextStyle(
-                              color: AppColors.textMuted,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ),
-                );
-              },
+                  if (_error != null) ...[
+                    Text(
+                      _error!,
+                      style: const TextStyle(color: AppColors.danger),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _SpeedMetricCard(
+                          icon: Icons.arrow_downward_rounded,
+                          label: strings.download,
+                          value: showValues
+                              ? '${_progress.downloadMbps.toStringAsFixed(1)} Mbps'
+                              : '--',
+                          color: AppColors.purple,
+                          samples: _downloadSamples,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _SpeedMetricCard(
+                          icon: Icons.arrow_upward_rounded,
+                          label: strings.upload,
+                          value: showValues
+                              ? '${_progress.uploadMbps.toStringAsFixed(1)} Mbps'
+                              : '--',
+                          color: AppColors.accent,
+                          samples: _uploadSamples,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _CompactMetricCard(
+                          label: strings.ping,
+                          value: showValues ? '${_progress.pingMs} ms' : '--',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _CompactMetricCard(
+                          label: strings.jitter,
+                          value: showValues ? '${_progress.jitterMs} ms' : '--',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _CompactMetricCard(
+                          label: strings.loss,
+                          value: showValues ? '0%' : '--',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+        child: Center(
+          heightFactor: 1,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 680),
+            child: PrimaryButton(
+              label: _running ? strings.stopTest : strings.startTest,
+              icon: _running ? Icons.stop_rounded : Icons.play_arrow_rounded,
+              color: _running ? AppColors.danger : AppColors.primary,
+              onPressed: _running ? _stop : _start,
             ),
           ),
-          if (_error != null) ...[
-            Text(_error!, style: const TextStyle(color: AppColors.danger)),
-            const SizedBox(height: 8),
-          ],
-          _SpeedMetricCard(
-            icon: Icons.arrow_downward_rounded,
-            label: strings.download,
-            value: showValues
-                ? '${_progress.downloadMbps.toStringAsFixed(1)} Mbps'
-                : '--',
-            color: AppColors.purple,
-            samples: _downloadSamples,
-          ),
-          const SizedBox(height: 8),
-          _SpeedMetricCard(
-            icon: Icons.arrow_upward_rounded,
-            label: strings.upload,
-            value: showValues
-                ? '${_progress.uploadMbps.toStringAsFixed(1)} Mbps'
-                : '--',
-            color: AppColors.accent,
-            samples: _uploadSamples,
-          ),
-          const SizedBox(height: 8),
-          _CompactMetricCard(
-            label: strings.ping,
-            value: showValues ? '${_progress.pingMs} ms' : '--',
-          ),
-          const SizedBox(height: 8),
-          _CompactMetricCard(
-            label: strings.jitter,
-            value: showValues ? '${_progress.jitterMs} ms' : '--',
-          ),
-          const SizedBox(height: 8),
-          _CompactMetricCard(
-            label: strings.loss,
-            value: showValues ? '0%' : '--',
-          ),
-          const SizedBox(height: 12),
-          PrimaryButton(
-            label: _running ? strings.stopTest : strings.startTest,
-            icon: _running ? Icons.stop_rounded : Icons.play_arrow_rounded,
-            color: _running ? AppColors.danger : AppColors.primary,
-            onPressed: _running ? _stop : _start,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -250,7 +298,7 @@ class _SpeedMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 112,
+      height: 94,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: AppColors.card,
@@ -292,7 +340,7 @@ class _SpeedMetricCard extends StatelessWidget {
           ),
           const Spacer(),
           SizedBox(
-            height: 34,
+            height: 22,
             child: CustomPaint(
               painter: _SparklinePainter(samples, color),
               child: const SizedBox.expand(),
@@ -313,7 +361,7 @@ class _CompactMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 62,
+      height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
       decoration: BoxDecoration(
         color: AppColors.card,
@@ -363,8 +411,8 @@ class _GaugePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height * 0.57);
-    final radius = math.min(size.width * 0.35, size.height * 0.39);
+    final center = Offset(size.width / 2, size.height * 0.60);
+    final radius = math.min(size.width * 0.38, size.height * 0.48);
     final rect = Rect.fromCircle(center: center, radius: radius);
     const strokeWidth = 18.0;
 

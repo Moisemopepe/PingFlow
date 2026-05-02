@@ -126,116 +126,141 @@ class _PingScreenState extends State<PingScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          HostInput(controller: _hostController),
-          const SizedBox(height: 14),
-          PfCard(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    strings.packets,
-                    style: const TextStyle(fontWeight: FontWeight.w800),
-                  ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 700;
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: isWide ? 680 : double.infinity,
+              ),
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(
+                  isWide ? 22 : 16,
+                  12,
+                  isWide ? 22 : 16,
+                  MediaQuery.paddingOf(context).bottom + 18,
                 ),
-                DropdownButtonHideUnderline(
-                  child: DropdownButton<int>(
-                    value: _packetCount,
-                    items: const [4, 8, 12, 20]
-                        .map(
-                          (count) => DropdownMenuItem<int>(
-                            value: count,
-                            child: Text('$count'),
+                children: [
+                  HostInput(controller: _hostController),
+                  const SizedBox(height: 10),
+                  PfCard(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            strings.packets,
+                            style: const TextStyle(fontWeight: FontWeight.w800),
                           ),
-                        )
-                        .toList(),
-                    onChanged: _running
-                        ? null
-                        : (value) {
-                            if (value != null) {
-                              setState(() => _packetCount = value);
-                            }
-                          },
+                        ),
+                        DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            value: _packetCount,
+                            items: const [4, 8, 12, 20]
+                                .map(
+                                  (count) => DropdownMenuItem<int>(
+                                    value: count,
+                                    child: Text('$count'),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: _running
+                                ? null
+                                : (value) {
+                                    if (value != null) {
+                                      setState(() => _packetCount = value);
+                                    }
+                                  },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  PrimaryButton(
+                    label: _running ? strings.stopPing : strings.startPing,
+                    icon: _running
+                        ? Icons.stop_rounded
+                        : Icons.play_arrow_rounded,
+                    color: _running ? AppColors.danger : AppColors.primary,
+                    onPressed: _running ? _stopPing : _startPing,
+                  ),
+                  if (_error != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      _error!,
+                      style: const TextStyle(color: AppColors.danger),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _StatTile(
+                            label: strings.sent, value: '${stats.sent}'),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _StatTile(
+                          label: strings.received,
+                          value: '${stats.received}',
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _StatTile(
+                          label: strings.loss,
+                          value: '${stats.packetLoss.toStringAsFixed(0)}%',
+                          color: stats.packetLoss > 0
+                              ? AppColors.warning
+                              : AppColors.accent,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  PfCard(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _LatencyStat(label: strings.min, value: stats.min),
+                        _LatencyStat(
+                            label: strings.avg, value: stats.avg.round()),
+                        _LatencyStat(label: strings.max, value: stats.max),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  SectionTitle(strings.responseTime),
+                  const SizedBox(height: 8),
+                  PfCard(
+                    child: SizedBox(
+                      height: 104,
+                      child: CustomPaint(
+                        painter: _PingGraphPainter(_replies.reversed.toList()),
+                        child: const SizedBox.expand(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  SectionTitle(strings.pingResults),
+                  const SizedBox(height: 8),
+                  if (_replies.isEmpty)
+                    PfCard(
+                      child: Text(
+                        strings.emptyPing,
+                        style: const TextStyle(color: AppColors.textSecondary),
+                      ),
+                    )
+                  else
+                    ..._replies.map(_ReplyTile.new),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 14),
-          PrimaryButton(
-            label: _running ? strings.stopPing : strings.startPing,
-            icon: _running ? Icons.stop_rounded : Icons.play_arrow_rounded,
-            color: _running ? AppColors.danger : AppColors.primary,
-            onPressed: _running ? _stopPing : _startPing,
-          ),
-          if (_error != null) ...[
-            const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: AppColors.danger)),
-          ],
-          const SizedBox(height: 22),
-          Row(
-            children: [
-              Expanded(
-                child: _StatTile(label: strings.sent, value: '${stats.sent}'),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _StatTile(
-                  label: strings.received,
-                  value: '${stats.received}',
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _StatTile(
-                  label: strings.loss,
-                  value: '${stats.packetLoss.toStringAsFixed(0)}%',
-                  color: stats.packetLoss > 0
-                      ? AppColors.warning
-                      : AppColors.accent,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          PfCard(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _LatencyStat(label: strings.min, value: stats.min),
-                _LatencyStat(label: strings.avg, value: stats.avg.round()),
-                _LatencyStat(label: strings.max, value: stats.max),
-              ],
-            ),
-          ),
-          const SizedBox(height: 18),
-          SectionTitle(strings.responseTime),
-          const SizedBox(height: 10),
-          PfCard(
-            child: SizedBox(
-              height: 132,
-              child: CustomPaint(
-                painter: _PingGraphPainter(_replies.reversed.toList()),
-                child: const SizedBox.expand(),
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          SectionTitle(strings.pingResults),
-          const SizedBox(height: 10),
-          if (_replies.isEmpty)
-            PfCard(
-              child: Text(
-                strings.emptyPing,
-                style: const TextStyle(color: AppColors.textSecondary),
-              ),
-            )
-          else
-            ..._replies.map(_ReplyTile.new),
-        ],
+          );
+        },
       ),
     );
   }
@@ -256,16 +281,20 @@ class _StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PfCard(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       child: Column(
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textMuted)),
+          Text(
+            label,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+          ),
           const SizedBox(height: 6),
           Text(
             value,
             style: TextStyle(
               color: color ?? AppColors.textPrimary,
-              fontSize: 20,
+              fontSize: 19,
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -316,11 +345,13 @@ class _ReplyTile extends StatelessWidget {
             Expanded(
               child: Text(
                 reply.success
-                    ? strings.replyFrom(
-                        reply.host,
-                        reply.latencyMs,
-                        reply.ttl,
-                      )
+                    ? reply.ttl == 0
+                        ? '${reply.host} - ${reply.latencyMs} ms - TTL N/A'
+                        : strings.replyFrom(
+                            reply.host,
+                            reply.latencyMs,
+                            reply.ttl,
+                          )
                     : strings.requestTimedOut(reply.host),
               ),
             ),

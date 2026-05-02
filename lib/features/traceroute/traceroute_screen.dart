@@ -96,48 +96,72 @@ class _TracerouteScreenState extends State<TracerouteScreen> {
     final strings = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(strings.traceroute)),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          HostInput(controller: _hostController),
-          const SizedBox(height: 14),
-          PrimaryButton(
-            label: _running ? strings.stopTraceroute : strings.startTraceroute,
-            icon: _running ? Icons.stop_rounded : Icons.play_arrow_rounded,
-            color: _running ? AppColors.danger : AppColors.accent,
-            onPressed: _running ? _stop : _start,
-          ),
-          if (_error != null) ...[
-            const SizedBox(height: 12),
-            Text(_error!, style: const TextStyle(color: AppColors.danger)),
-          ],
-          const SizedBox(height: 22),
-          PfCard(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _Summary(label: strings.hops, value: '${_hops.length}'),
-                _Summary(label: strings.avgTime, value: '$avg ms'),
-                _Summary(
-                  label: strings.destination,
-                  value: _hops.isEmpty ? '-' : _hops.last.ip,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          SectionTitle(strings.route),
-          const SizedBox(height: 10),
-          if (_hops.isEmpty)
-            PfCard(
-              child: Text(
-                strings.emptyTraceroute,
-                style: const TextStyle(color: AppColors.textSecondary),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 700;
+          return Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: isWide ? 680 : double.infinity,
               ),
-            )
-          else
-            ..._hops.map(_HopTile.new),
-        ],
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(
+                  isWide ? 22 : 16,
+                  12,
+                  isWide ? 22 : 16,
+                  MediaQuery.paddingOf(context).bottom + 18,
+                ),
+                children: [
+                  HostInput(controller: _hostController),
+                  const SizedBox(height: 10),
+                  PrimaryButton(
+                    label: _running
+                        ? strings.stopTraceroute
+                        : strings.startTraceroute,
+                    icon: _running
+                        ? Icons.stop_rounded
+                        : Icons.play_arrow_rounded,
+                    color: _running ? AppColors.danger : AppColors.accent,
+                    onPressed: _running ? _stop : _start,
+                  ),
+                  if (_error != null) ...[
+                    const SizedBox(height: 10),
+                    Text(
+                      _error!,
+                      style: const TextStyle(color: AppColors.danger),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+                  PfCard(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _Summary(label: strings.hops, value: '${_hops.length}'),
+                        _Summary(label: strings.avgTime, value: '$avg ms'),
+                        _Summary(
+                          label: strings.destination,
+                          value: _hops.isEmpty ? '-' : _hops.last.ip,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  SectionTitle(strings.route),
+                  const SizedBox(height: 8),
+                  if (_hops.isEmpty)
+                    PfCard(
+                      child: Text(
+                        strings.emptyTraceroute,
+                        style: const TextStyle(color: AppColors.textSecondary),
+                      ),
+                    )
+                  else
+                    ..._hops.map(_HopTile.new),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -155,11 +179,11 @@ class _Summary extends StatelessWidget {
       child: Column(
         children: [
           Text(label, style: const TextStyle(color: AppColors.textMuted)),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             value,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17),
+            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
           ),
         ],
       ),
@@ -178,7 +202,7 @@ class _HopTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: PfCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           children: [
             CircleAvatar(

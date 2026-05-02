@@ -53,68 +53,87 @@ class _NetworkInfoScreenState extends State<NetworkInfoScreen> {
             return Center(child: Text(strings.unableNetworkDetails));
           }
           final info = snapshot.data!;
-          return ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              SectionTitle(strings.interface),
-              const SizedBox(height: 10),
-              PfCard(
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.wifi_rounded,
-                      color: AppColors.accent,
-                      size: 32,
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final isWide = constraints.maxWidth >= 700;
+              return Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: isWide ? 680 : double.infinity,
+                  ),
+                  child: ListView(
+                    padding: EdgeInsets.fromLTRB(
+                      isWide ? 22 : 16,
+                      12,
+                      isWide ? 22 : 16,
+                      MediaQuery.paddingOf(context).bottom + 18,
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(info.networkType,
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w800)),
-                          const SizedBox(height: 3),
-                          Text(
-                            strings.connected,
-                            style: const TextStyle(color: AppColors.accent),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          strings.signal,
-                          style: const TextStyle(color: AppColors.textMuted),
+                    children: [
+                      SectionTitle(strings.interface),
+                      const SizedBox(height: 8),
+                      PfCard(
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.wifi_rounded,
+                              color: AppColors.accent,
+                              size: 32,
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(info.networkType,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w800)),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    strings.connected,
+                                    style: const TextStyle(
+                                        color: AppColors.accent),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  strings.signal,
+                                  style: const TextStyle(
+                                      color: AppColors.textMuted),
+                                ),
+                                Text(info.signal,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w700)),
+                              ],
+                            ),
+                          ],
                         ),
-                        Text(info.signal,
-                            style:
-                                const TextStyle(fontWeight: FontWeight.w700)),
-                      ],
-                    ),
-                  ],
+                      ),
+                      const SizedBox(height: 14),
+                      SectionTitle(strings.ipAddresses),
+                      const SizedBox(height: 8),
+                      _InfoGroup(rows: [
+                        _InfoRow(strings.localIp, info.localIp),
+                        _InfoRow(strings.publicIp, info.publicIp),
+                      ]),
+                      const SizedBox(height: 14),
+                      SectionTitle(strings.networkDetails),
+                      const SizedBox(height: 8),
+                      _InfoGroup(rows: [
+                        _InfoRow('DNS', info.dns),
+                        _InfoRow(strings.gateway, info.gateway),
+                        _InfoRow(strings.subnetMask, info.subnetMask),
+                        _InfoRow(strings.networkType, info.networkType),
+                        _InfoRow(strings.backendApi, info.backendStatus),
+                      ]),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              SectionTitle(strings.ipAddresses),
-              const SizedBox(height: 10),
-              _InfoGroup(rows: [
-                _InfoRow(strings.localIp, info.localIp),
-                _InfoRow(strings.publicIp, info.publicIp),
-              ]),
-              const SizedBox(height: 20),
-              SectionTitle(strings.networkDetails),
-              const SizedBox(height: 10),
-              _InfoGroup(rows: [
-                _InfoRow('DNS', info.dns),
-                _InfoRow(strings.gateway, info.gateway),
-                _InfoRow(strings.subnetMask, info.subnetMask),
-                _InfoRow(strings.networkType, info.networkType),
-                _InfoRow(strings.backendApi, info.backendStatus),
-              ]),
-            ],
+              );
+            },
           );
         },
       ),
@@ -142,6 +161,7 @@ class _InfoGroup extends StatelessWidget {
           for (final row in rows)
             ListTile(
               dense: true,
+              visualDensity: VisualDensity.compact,
               title: Text(row.label,
                   style: const TextStyle(color: AppColors.textSecondary)),
               trailing: ConstrainedBox(
