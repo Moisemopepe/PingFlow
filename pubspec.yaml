@@ -1,0 +1,28 @@
+name: pingflow
+description: A modern network diagnostic tool for Android.
+publish_to: "none"
+version: 0.1.6+6
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  connectivity_plus: ^6.1.5
+  path: ^1.9.1
+  package_info_plus: ^8.3.1
+  shared_preferences: ^2.5.3
+  sqflite: ^2.4.2
+
+dev_dependencies:
+  flutter_lints: ^3.0.2
+  flutter_test:
+    sdk: flutter
+  sqflite_common_ffi: ^2.4.0+3
+
+flutter:
+  uses-material-design: true

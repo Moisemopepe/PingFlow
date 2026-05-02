@@ -1,0 +1,241 @@
+import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
+import '../../app/pingflow_app.dart';
+import '../../core/constants/app_colors.dart';
+import '../../core/i18n/app_strings.dart';
+import '../../shared/widgets/pf_card.dart';
+import '../../shared/widgets/section_title.dart';
+
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final dependencies = AppDependencies.of(context);
+    final settings = dependencies.settingsRepository;
+    final strings = AppStrings.of(context);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(strings.settings)),
+      body: ListenableBuilder(
+        listenable: settings,
+        builder: (context, _) {
+          return ListView(
+            padding: const EdgeInsets.all(20),
+            children: [
+              SectionTitle(strings.general),
+              const SizedBox(height: 10),
+              PfCard(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    SwitchListTile(
+                      secondary: const Icon(Icons.dark_mode_rounded,
+                          color: AppColors.primary),
+                      title: Text(strings.theme,
+                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                      subtitle: Text(settings.themeMode == ThemeMode.dark
+                          ? strings.dark
+                          : strings.light),
+                      value: settings.themeMode == ThemeMode.dark,
+                      onChanged: (enabled) => settings.setThemeMode(
+                        enabled ? ThemeMode.dark : ThemeMode.light,
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.translate_rounded,
+                          color: AppColors.primary),
+                      title: Text(strings.language,
+                          style: const TextStyle(fontWeight: FontWeight.w700)),
+                      trailing: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: settings.languageCode,
+                          items: [
+                            DropdownMenuItem(
+                              value: 'en',
+                              child: Text(strings.english),
+                            ),
+                            DropdownMenuItem(
+                              value: 'fr',
+                              child: Text(strings.french),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            if (value != null) settings.setLanguageCode(value);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              SectionTitle(strings.about),
+              const SizedBox(height: 10),
+              PfCard(
+                padding: EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    _SettingRow(
+                      icon: Icons.info_outline_rounded,
+                      title: strings.aboutPingFlow,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const AboutPingFlowScreen(),
+                        ),
+                      ),
+                    ),
+                    _SettingRow(
+                      icon: Icons.star_rounded,
+                      title: strings.rateUs,
+                    ),
+                    _SettingRow(
+                      icon: Icons.share_rounded,
+                      title: strings.shareApp,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 28),
+              Center(
+                child: _VersionText(prefix: strings.version),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class AboutPingFlowScreen extends StatelessWidget {
+  const AboutPingFlowScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
+    return Scaffold(
+      appBar: AppBar(title: Text(strings.aboutPingFlow)),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          PfCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'PingFlow',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  strings.aboutDescription,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    height: 1.45,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                _AboutVersionRow(label: strings.version),
+                _AboutRow(label: strings.developer, value: 'MOPEPE / PingFlow'),
+                _AboutRow(
+                    label: strings.backend, value: 'Node.js diagnostics API'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VersionText extends StatelessWidget {
+  const _VersionText({required this.prefix});
+
+  final String prefix;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snapshot) {
+        final version = _formatVersion(snapshot.data);
+
+        return Text(
+          version == null ? prefix : '$prefix $version',
+          style: const TextStyle(color: AppColors.textMuted),
+        );
+      },
+    );
+  }
+}
+
+class _AboutVersionRow extends StatelessWidget {
+  const _AboutVersionRow({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<PackageInfo>(
+      future: PackageInfo.fromPlatform(),
+      builder: (context, snapshot) {
+        return _AboutRow(
+            label: label, value: _formatVersion(snapshot.data) ?? '-');
+      },
+    );
+  }
+}
+
+String? _formatVersion(PackageInfo? info) {
+  if (info == null) return null;
+  return info.version;
+}
+
+class _AboutRow extends StatelessWidget {
+  const _AboutRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child:
+                Text(label, style: const TextStyle(color: AppColors.textMuted)),
+          ),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingRow extends StatelessWidget {
+  const _SettingRow({
+    required this.icon,
+    required this.title,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: onTap,
+      leading: Icon(icon, color: AppColors.primary),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+      trailing:
+          const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+    );
+  }
+}
