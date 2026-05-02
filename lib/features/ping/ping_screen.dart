@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../../app/pingflow_app.dart';
+import '../../app/theme/app_theme.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/i18n/app_strings.dart';
 import '../../core/models/diagnostic_models.dart';
@@ -239,7 +240,10 @@ class _PingScreenState extends State<PingScreen> {
                     child: SizedBox(
                       height: 104,
                       child: CustomPaint(
-                        painter: _PingGraphPainter(_replies.reversed.toList()),
+                        painter: _PingGraphPainter(
+                          _replies.reversed.toList(),
+                          context.pfColors.stroke,
+                        ),
                         child: const SizedBox.expand(),
                       ),
                     ),
@@ -251,7 +255,7 @@ class _PingScreenState extends State<PingScreen> {
                     PfCard(
                       child: Text(
                         strings.emptyPing,
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: context.pfColors.textSecondary),
                       ),
                     )
                   else
@@ -280,6 +284,7 @@ class _StatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
     return PfCard(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       child: Column(
@@ -287,13 +292,13 @@ class _StatTile extends StatelessWidget {
           Text(
             label,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: AppColors.textMuted, fontSize: 12),
+            style: TextStyle(color: colors.textMuted, fontSize: 12),
           ),
           const SizedBox(height: 6),
           Text(
             value,
             style: TextStyle(
-              color: color ?? AppColors.textPrimary,
+              color: color ?? colors.textPrimary,
               fontSize: 19,
               fontWeight: FontWeight.w900,
             ),
@@ -312,9 +317,10 @@ class _LatencyStat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
     return Column(
       children: [
-        Text(label, style: const TextStyle(color: AppColors.textMuted)),
+        Text(label, style: TextStyle(color: colors.textMuted)),
         const SizedBox(height: 4),
         Text('$value ms', style: const TextStyle(fontWeight: FontWeight.w800)),
       ],
@@ -330,6 +336,7 @@ class _ReplyTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppStrings.of(context);
+    final colors = context.pfColors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: PfCard(
@@ -353,6 +360,7 @@ class _ReplyTile extends StatelessWidget {
                             reply.ttl,
                           )
                     : strings.requestTimedOut(reply.host),
+                style: TextStyle(color: colors.textPrimary),
               ),
             ),
           ],
@@ -363,14 +371,15 @@ class _ReplyTile extends StatelessWidget {
 }
 
 class _PingGraphPainter extends CustomPainter {
-  const _PingGraphPainter(this.replies);
+  const _PingGraphPainter(this.replies, this.gridColor);
 
   final List<PingReply> replies;
+  final Color gridColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     final gridPaint = Paint()
-      ..color = AppColors.stroke
+      ..color = gridColor
       ..strokeWidth = 1;
     for (var i = 0; i < 4; i++) {
       final y = size.height * i / 3;

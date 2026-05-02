@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/pingflow_app.dart';
+import '../../app/theme/app_theme.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/i18n/app_strings.dart';
 import '../../core/models/diagnostic_models.dart';
@@ -172,6 +173,7 @@ class _InfoGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
     return PfCard(
       padding: EdgeInsets.zero,
       child: Column(
@@ -181,7 +183,7 @@ class _InfoGroup extends StatelessWidget {
               dense: true,
               visualDensity: VisualDensity.compact,
               title: Text(row.label,
-                  style: const TextStyle(color: AppColors.textSecondary)),
+                  style: TextStyle(color: colors.textSecondary)),
               trailing: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 210),
                 child: Text(

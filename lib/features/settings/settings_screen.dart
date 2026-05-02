@@ -3,6 +3,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../app/pingflow_app.dart';
+import '../../app/theme/app_theme.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/i18n/app_strings.dart';
 import '../../shared/widgets/pf_card.dart';
@@ -139,14 +140,13 @@ class AboutPingFlowScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   strings.aboutDescription,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.pfColors.textSecondary,
                     height: 1.45,
                   ),
                 ),
                 const SizedBox(height: 18),
                 _AboutVersionRow(label: strings.version),
-                _AboutRow(label: strings.developer, value: 'Moise Mopepe'),
                 const SizedBox(height: 18),
                 Text(
                   strings.features,
@@ -161,19 +161,14 @@ class AboutPingFlowScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 6),
                     child: Text(
                       '- $feature',
-                      style: const TextStyle(color: AppColors.textSecondary),
+                      style: TextStyle(color: context.pfColors.textSecondary),
                     ),
                   ),
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  strings.builtWithFlutter,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 12),
                 Text(
                   strings.copyright,
-                  style: const TextStyle(color: AppColors.textMuted),
+                  style: TextStyle(color: context.pfColors.textMuted),
                 ),
               ],
             ),
@@ -215,8 +210,8 @@ class PrivacyPolicyScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   strings.privacyDescription,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: context.pfColors.textSecondary,
                     height: 1.5,
                   ),
                 ),
@@ -243,7 +238,7 @@ class _VersionText extends StatelessWidget {
 
         return Text(
           version == null ? prefix : '$prefix $version',
-          style: const TextStyle(color: AppColors.textMuted),
+          style: TextStyle(color: context.pfColors.textMuted),
         );
       },
     );
@@ -285,8 +280,8 @@ class _AboutRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child:
-                Text(label, style: const TextStyle(color: AppColors.textMuted)),
+            child: Text(label,
+                style: TextStyle(color: context.pfColors.textMuted)),
           ),
           Text(value, style: const TextStyle(fontWeight: FontWeight.w800)),
         ],
@@ -312,8 +307,10 @@ class _SettingRow extends StatelessWidget {
       onTap: onTap,
       leading: Icon(icon, color: AppColors.primary),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-      trailing:
-          const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: context.pfColors.textMuted,
+      ),
     );
   }
 }

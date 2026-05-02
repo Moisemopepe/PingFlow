@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/pingflow_app.dart';
+import '../../app/theme/app_theme.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/i18n/app_strings.dart';
 import '../../core/models/diagnostic_models.dart';
@@ -20,6 +21,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
     final history = AppDependencies.of(context).historyRepository;
     final strings = AppStrings.of(context);
     return Scaffold(
@@ -93,7 +95,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 PfCard(
                   child: Text(
                     strings.noTestsMatch,
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: colors.textSecondary),
                   ),
                 )
               else
@@ -122,6 +124,7 @@ class _HistoryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
     final color = switch (item.type) {
       DiagnosticType.ping => AppColors.primary,
       DiagnosticType.traceroute => AppColors.accent,
@@ -150,7 +153,7 @@ class _HistoryTile extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 4),
                   Text(item.subtitle,
-                      style: const TextStyle(color: AppColors.textMuted)),
+                      style: TextStyle(color: colors.textMuted)),
                 ],
               ),
             ),

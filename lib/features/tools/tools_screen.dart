@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/app_theme.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/i18n/app_strings.dart';
 import '../../shared/widgets/pf_card.dart';
@@ -70,6 +71,7 @@ class _ToolRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: PfCard(
@@ -90,12 +92,11 @@ class _ToolRow extends StatelessWidget {
                   Text(title,
                       style: const TextStyle(fontWeight: FontWeight.w800)),
                   const SizedBox(height: 5),
-                  Text(subtitle,
-                      style: const TextStyle(color: AppColors.textSecondary)),
+                  Text(subtitle, style: TextStyle(color: colors.textSecondary)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+            Icon(Icons.chevron_right_rounded, color: colors.textMuted),
           ],
         ),
       ),

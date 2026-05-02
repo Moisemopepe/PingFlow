@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../app/pingflow_app.dart';
+import '../../app/theme/app_theme.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/i18n/app_strings.dart';
 import '../../core/models/diagnostic_models.dart';
@@ -98,11 +99,9 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
         : _progress.downloadMbps;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(strings.speedTest),
-        backgroundColor: Colors.black,
-        surfaceTintColor: Colors.black,
         actions: [
           IconButton(
             tooltip: strings.history,
@@ -137,7 +136,10 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                       curve: Curves.easeOutCubic,
                       builder: (context, animatedSpeed, _) {
                         return CustomPaint(
-                          painter: _GaugePainter(animatedSpeed),
+                          painter: _GaugePainter(
+                            animatedSpeed,
+                            colors: context.pfColors,
+                          ),
                           child: Center(
                             child: Padding(
                               padding: EdgeInsets.only(top: isShort ? 42 : 54),
@@ -152,22 +154,22 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                                       fontSize: isShort ? 32 : 36,
                                       height: 1,
                                       fontWeight: FontWeight.w900,
-                                      color: AppColors.textPrimary,
+                                      color: context.pfColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 3),
-                                  const Text(
+                                  Text(
                                     'Mbps',
                                     style: TextStyle(
-                                      color: AppColors.textSecondary,
+                                      color: context.pfColors.textSecondary,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
                                     _phaseLabel(_progress.phase),
-                                    style: const TextStyle(
-                                      color: AppColors.textMuted,
+                                    style: TextStyle(
+                                      color: context.pfColors.textMuted,
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -310,9 +312,9 @@ class _SpeedMetricCard extends StatelessWidget {
       height: 94,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: context.pfColors.card,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: AppColors.stroke),
+        border: Border.all(color: context.pfColors.stroke),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -326,10 +328,9 @@ class _SpeedMetricCard extends StatelessWidget {
                   label,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: AppColors.textSecondary,
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                  ),
+                  ).copyWith(color: context.pfColors.textSecondary),
                 ),
               ),
             ],
@@ -342,9 +343,8 @@ class _SpeedMetricCard extends StatelessWidget {
               value,
               style: const TextStyle(
                 fontSize: 17,
-                color: AppColors.textPrimary,
                 fontWeight: FontWeight.w900,
-              ),
+              ).copyWith(color: context.pfColors.textPrimary),
             ),
           ),
           const Spacer(),
@@ -373,9 +373,9 @@ class _CompactMetricCard extends StatelessWidget {
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: context.pfColors.card,
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: AppColors.stroke),
+        border: Border.all(color: context.pfColors.stroke),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,10 +385,9 @@ class _CompactMetricCard extends StatelessWidget {
             label,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              color: AppColors.textSecondary,
               fontSize: 11,
               fontWeight: FontWeight.w700,
-            ),
+            ).copyWith(color: context.pfColors.textSecondary),
           ),
           const SizedBox(height: 5),
           FittedBox(
@@ -397,10 +396,9 @@ class _CompactMetricCard extends StatelessWidget {
             child: Text(
               value,
               style: const TextStyle(
-                color: AppColors.textPrimary,
                 fontSize: 15,
                 fontWeight: FontWeight.w900,
-              ),
+              ).copyWith(color: context.pfColors.textPrimary),
             ),
           ),
         ],
@@ -410,9 +408,10 @@ class _CompactMetricCard extends StatelessWidget {
 }
 
 class _GaugePainter extends CustomPainter {
-  const _GaugePainter(this.value);
+  const _GaugePainter(this.value, {required this.colors});
 
   final double value;
+  final PfThemeColors colors;
 
   static const _start = math.pi * 0.84;
   static const _sweep = math.pi * 1.32;
@@ -426,7 +425,7 @@ class _GaugePainter extends CustomPainter {
     const strokeWidth = 18.0;
 
     final trackPaint = Paint()
-      ..color = AppColors.stroke.withValues(alpha: 0.45)
+      ..color = colors.stroke.withValues(alpha: 0.70)
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
@@ -466,17 +465,17 @@ class _GaugePainter extends CustomPainter {
       needleStart,
       needleEnd,
       Paint()
-        ..color = Colors.white
+        ..color = colors.textPrimary
         ..strokeWidth = 5
         ..strokeCap = StrokeCap.round,
     );
-    canvas.drawCircle(center, 9, Paint()..color = Colors.white);
-    canvas.drawCircle(center, 4.5, Paint()..color = AppColors.card);
+    canvas.drawCircle(center, 9, Paint()..color = colors.textPrimary);
+    canvas.drawCircle(center, 4.5, Paint()..color = colors.card);
   }
 
   void _drawTicks(Canvas canvas, Offset center, double radius) {
     final tickPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.78)
+      ..color = colors.textPrimary.withValues(alpha: 0.78)
       ..strokeWidth = 1.4
       ..strokeCap = StrokeCap.round;
     final textPainter = TextPainter(textDirection: TextDirection.ltr);
@@ -497,8 +496,8 @@ class _GaugePainter extends CustomPainter {
       if (i.isEven) {
         textPainter.text = TextSpan(
           text: (i * 50).toString(),
-          style: const TextStyle(
-            color: AppColors.textSecondary,
+          style: TextStyle(
+            color: colors.textSecondary,
             fontSize: 9,
             fontWeight: FontWeight.w700,
           ),
@@ -515,7 +514,7 @@ class _GaugePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _GaugePainter oldDelegate) {
-    return value != oldDelegate.value;
+    return value != oldDelegate.value || colors != oldDelegate.colors;
   }
 }
 

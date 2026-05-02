@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app/pingflow_app.dart';
+import '../../app/theme/app_theme.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/i18n/app_strings.dart';
 import '../../core/models/diagnostic_models.dart';
@@ -108,12 +109,14 @@ class _BrandTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
     return RichText(
-      text: const TextSpan(
-        style: TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
+      text: TextSpan(
+        style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w800),
         children: [
-          TextSpan(text: 'Ping', style: TextStyle(color: Colors.white)),
-          TextSpan(text: 'Flow', style: TextStyle(color: AppColors.accent)),
+          TextSpan(text: 'Ping', style: TextStyle(color: colors.textPrimary)),
+          const TextSpan(
+              text: 'Flow', style: TextStyle(color: AppColors.accent)),
         ],
       ),
     );
@@ -126,6 +129,7 @@ class _HeroHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final strings = AppStrings.of(context);
+    final colors = context.pfColors;
     return Row(
       children: [
         Expanded(
@@ -142,7 +146,7 @@ class _HeroHeader extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 strings.heroSubtitle,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: colors.textSecondary),
               ),
             ],
           ),
@@ -156,7 +160,7 @@ class _HeroHeader extends StatelessWidget {
               colors: [
                 AppColors.primary.withValues(alpha: 0.55),
                 AppColors.primary.withValues(alpha: 0.08),
-                Colors.transparent,
+                colors.background.withValues(alpha: 0),
               ],
             ),
           ),
@@ -184,12 +188,13 @@ class _ToolCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
     return PfCard(
       onTap: onTap,
       gradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [color.withValues(alpha: 0.35), AppColors.card],
+        colors: [color.withValues(alpha: 0.22), colors.card],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -201,8 +206,7 @@ class _ToolCard extends StatelessWidget {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style:
-                const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+            style: TextStyle(color: colors.textSecondary, fontSize: 12),
           ),
         ],
       ),
@@ -217,6 +221,7 @@ class _RecentTestTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
     final color = switch (item.type) {
       DiagnosticType.ping => AppColors.primary,
       DiagnosticType.traceroute => AppColors.accent,
@@ -246,9 +251,10 @@ class _RecentTestTile extends StatelessWidget {
                   Text(item.title,
                       style: const TextStyle(fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
-                  Text(item.subtitle,
-                      style: const TextStyle(
-                          color: AppColors.textMuted, fontSize: 12)),
+                  Text(
+                    item.subtitle,
+                    style: TextStyle(color: colors.textMuted, fontSize: 12),
+                  ),
                 ],
               ),
             ),

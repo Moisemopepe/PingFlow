@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../app/pingflow_app.dart';
+import '../../app/theme/app_theme.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/i18n/app_strings.dart';
 import '../../core/models/diagnostic_models.dart';
@@ -152,7 +153,7 @@ class _TracerouteScreenState extends State<TracerouteScreen> {
                     PfCard(
                       child: Text(
                         strings.emptyTraceroute,
-                        style: const TextStyle(color: AppColors.textSecondary),
+                        style: TextStyle(color: context.pfColors.textSecondary),
                       ),
                     )
                   else
@@ -175,10 +176,11 @@ class _Summary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
     return Flexible(
       child: Column(
         children: [
-          Text(label, style: const TextStyle(color: AppColors.textMuted)),
+          Text(label, style: TextStyle(color: colors.textMuted)),
           const SizedBox(height: 4),
           Text(
             value,
@@ -199,6 +201,7 @@ class _HopTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = latencyColor(hop.latencyMs);
+    final colors = context.pfColors;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: PfCard(
@@ -207,7 +210,7 @@ class _HopTile extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 13,
-              backgroundColor: AppColors.surface,
+              backgroundColor: colors.surface,
               child:
                   Text('${hop.number}', style: const TextStyle(fontSize: 12)),
             ),

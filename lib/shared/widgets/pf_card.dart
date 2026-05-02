@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants/app_colors.dart';
+import '../../app/theme/app_theme.dart';
 
 class PfCard extends StatelessWidget {
   const PfCard({
@@ -18,20 +18,21 @@ class PfCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.pfColors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final card = AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       padding: padding,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.card : Colors.white,
+        color: colors.card,
         gradient: gradient,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isDark ? AppColors.stroke : const Color(0xFFE2E8F0),
-        ),
+        border: Border.all(color: colors.stroke),
         boxShadow: [
           BoxShadow(
-            color: isDark ? const Color(0x66000000) : const Color(0x140F172A),
+            color: isDark
+                ? colors.background.withValues(alpha: 0.40)
+                : colors.textPrimary.withValues(alpha: 0.08),
             blurRadius: isDark ? 20 : 16,
             offset: const Offset(0, 10),
           ),
