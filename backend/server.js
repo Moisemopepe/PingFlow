@@ -1,12 +1,18 @@
 const http = require('http');
+const net = require('net');
 const os = require('os');
 const { spawn } = require('child_process');
 
 const PORT = Number(process.env.PORT || 8787);
 const MAX_SPEED_BYTES = 64 * 1024 * 1024;
 const HOST_PATTERN = /^[a-zA-Z0-9.-]{1,253}$/;
+const PING_MODE = process.env.PINGFLOW_PING_MODE || 'auto';
 
 function json(res, status, payload) {
+  if (res.headersSent) {
+    if (!res.writableEnded) res.end();
+    return;
+  }
   const body = JSON.stringify(payload);
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
@@ -40,11 +46,23 @@ function validateHost(host) {
 }
 
 function writeEvent(res, payload) {
+  if (res.writableEnded) return;
   res.write(`${JSON.stringify(payload)}\n`);
 }
 
+function endResponse(res) {
+  if (!res.writableEnded) res.end();
+}
+
 function spawnDiagnostic(command, args, onLine, onClose, onError) {
-  const child = spawn(command, args, { windowsHide: true });
+  let child;
+  try {
+    child = spawn(command, args, { windowsHide: true });
+  } catch (error) {
+    onError(error.message);
+    setImmediate(onClose);
+    return null;
+  }
   let buffer = '';
 
   child.stdout.on('data', (chunk) => {
@@ -95,6 +113,44 @@ function parsePingLine(line, sequence, host) {
   };
 }
 
+function tcpProbe(host, port, timeoutMs = 3000) {
+  return new Promise((resolve) => {
+    const started = process.hrtime.bigint();
+    const socket = net.createConnection({ host, port });
+    let settled = false;
+
+    function done(success) {
+      if (settled) return;
+      settled = true;
+      socket.destroy();
+      const elapsedMs = Number(process.hrtime.bigint() - started) / 1e6;
+      resolve(success ? Math.max(1, Math.round(elapsedMs)) : 0);
+    }
+
+    socket.setTimeout(timeoutMs);
+    socket.once('connect', () => done(true));
+    socket.once('timeout', () => done(false));
+    socket.once('error', () => done(false));
+  });
+}
+
+async function tcpPingFallback(host, count, writeResult, shouldStop) {
+  for (let sequence = 1; sequence <= count; sequence += 1) {
+    if (shouldStop()) return;
+    let latencyMs = await tcpProbe(host, 443);
+    if (!latencyMs) latencyMs = await tcpProbe(host, 80);
+    writeResult({
+      sequence,
+      host,
+      latencyMs,
+      ttl: 0,
+      success: latencyMs > 0,
+      mode: 'tcp',
+    });
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+}
+
 function handlePingStream(req, res, url) {
   let host;
   try {
@@ -110,6 +166,31 @@ function handlePingStream(req, res, url) {
   let sequence = 0;
   let reported = 0;
   let closed = false;
+  let diagnosticError = '';
+
+  function attachCloseHandler(child) {
+    res.on('close', () => {
+      if (res.writableEnded) return;
+      closed = true;
+      if (child) child.kill();
+    });
+  }
+
+  if (PING_MODE === 'tcp') {
+    tcpPingFallback(
+      host,
+      count,
+      (event) => {
+        reported += 1;
+        writeEvent(res, event);
+      },
+      () => closed,
+    )
+      .catch((error) => writeEvent(res, { error: error.message }))
+      .finally(() => endResponse(res));
+    attachCloseHandler(null);
+    return;
+  }
 
   const child = spawnDiagnostic(
     diagnostic.command,
@@ -123,18 +204,30 @@ function handlePingStream(req, res, url) {
         writeEvent(res, event);
       }
     },
-    () => {
-      if (!closed) res.end();
+    async () => {
+      if (closed) return;
+      if (reported === 0) {
+        await tcpPingFallback(
+          host,
+          count,
+          (event) => {
+            reported += 1;
+            writeEvent(res, event);
+          },
+          () => closed,
+        );
+      }
+      if (reported === 0 && diagnosticError) {
+        writeEvent(res, { error: diagnosticError });
+      }
+      endResponse(res);
     },
     (error) => {
-      writeEvent(res, { error });
+      diagnosticError = error;
     },
   );
 
-  req.on('close', () => {
-    closed = true;
-    child.kill();
-  });
+  attachCloseHandler(child);
 }
 
 function tracerouteArgs(host) {
@@ -181,16 +274,17 @@ function handleTracerouteStream(req, res, url) {
       if (event) writeEvent(res, event);
     },
     () => {
-      if (!closed) res.end();
+      if (!closed) endResponse(res);
     },
     (error) => {
       writeEvent(res, { error });
     },
   );
 
-  req.on('close', () => {
+  res.on('close', () => {
+    if (res.writableEnded) return;
     closed = true;
-    child.kill();
+    if (child) child.kill();
   });
 }
 
@@ -224,17 +318,21 @@ function handleDownload(res, url) {
 
 function handleUpload(req, res) {
   let received = 0;
+  let rejected = false;
   const started = process.hrtime.bigint();
 
   req.on('data', (chunk) => {
+    if (rejected) return;
     received += chunk.length;
     if (received > MAX_SPEED_BYTES) {
+      rejected = true;
       json(res, 413, { error: 'Upload payload is too large.' });
       req.destroy();
     }
   });
 
   req.on('end', () => {
+    if (rejected || res.headersSent) return;
     const elapsedSeconds = Number(process.hrtime.bigint() - started) / 1e9;
     const mbps = elapsedSeconds > 0 ? (received * 8) / elapsedSeconds / 1000000 : 0;
     json(res, 200, { receivedBytes: received, mbps });
@@ -281,6 +379,9 @@ const server = http.createServer((req, res) => {
     }
     return json(res, 404, { error: 'Endpoint not found.' });
   } catch (error) {
+    if (res.headersSent) {
+      return endResponse(res);
+    }
     return json(res, 500, { error: error.message || 'Internal server error.' });
   }
 });

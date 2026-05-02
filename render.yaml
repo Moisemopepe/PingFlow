@@ -6,3 +6,6 @@ services:
     plan: free
     healthCheckPath: /health
     autoDeploy: true
+    envVars:
+      - key: PINGFLOW_PING_MODE
+        value: tcp
