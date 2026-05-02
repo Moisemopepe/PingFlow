@@ -202,8 +202,7 @@ class AppStrings {
   String get upload => 'Upload';
   String get jitter => 'Jitter';
   String get ready => isFrench ? 'Pret' : 'Ready';
-  String get measuringPingJitter =>
-      isFrench ? 'Mesure du ping et du jitter' : 'Measuring ping and jitter';
+  String get measuringPingJitter => isFrench ? 'Latence...' : 'Latency...';
   String get measuringDownload =>
       isFrench ? 'Mesure du download' : 'Measuring download';
   String get measuringUpload =>

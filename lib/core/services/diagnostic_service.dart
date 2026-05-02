@@ -73,8 +73,13 @@ class RealDiagnosticService implements DiagnosticService {
   @override
   Stream<SpeedProgress> speedTestStream() async* {
     final pings = <int>[];
-    for (var i = 0; i < 4; i++) {
-      pings.add(await _measureBackendLatency());
+    for (var i = 0; i < 3; i++) {
+      final latency = await _measureBackendLatencySafe();
+      if (latency != null) pings.add(latency);
+      if (pings.isEmpty) {
+        yield const SpeedProgress(phase: SpeedTestPhase.ping);
+        continue;
+      }
       final avgPing = pings.reduce((a, b) => a + b) / pings.length;
       final jitter = _jitter(pings, avgPing);
       yield SpeedProgress(
@@ -85,8 +90,9 @@ class RealDiagnosticService implements DiagnosticService {
       await Future<void>.delayed(const Duration(milliseconds: 120));
     }
 
-    final avgPing = pings.reduce((a, b) => a + b) / pings.length;
-    final jitter = _jitter(pings, avgPing);
+    final avgPing =
+        pings.isEmpty ? 0.0 : pings.reduce((a, b) => a + b) / pings.length;
+    final jitter = pings.isEmpty ? 0.0 : _jitter(pings, avgPing);
     var download = 0.0;
     var upload = 0.0;
 
@@ -209,8 +215,16 @@ class RealDiagnosticService implements DiagnosticService {
 
   Future<int> _measureBackendLatency() async {
     final started = DateTime.now();
-    await _getJson(_uri('/health')).timeout(const Duration(seconds: 4));
+    await _getJson(_uri('/health')).timeout(const Duration(seconds: 8));
     return DateTime.now().difference(started).inMilliseconds;
+  }
+
+  Future<int?> _measureBackendLatencySafe() async {
+    try {
+      return await _measureBackendLatency();
+    } catch (_) {
+      return null;
+    }
   }
 
   Stream<double> _measureDownloadStream({required int bytes}) async* {

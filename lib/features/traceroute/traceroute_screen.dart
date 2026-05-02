@@ -36,6 +36,7 @@ class _TracerouteScreenState extends State<TracerouteScreen> {
   }
 
   Future<void> _start() async {
+    FocusScope.of(context).unfocus();
     final dependencies = AppDependencies.of(context);
     final strings = AppStrings.of(context);
     setState(() {

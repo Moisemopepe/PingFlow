@@ -62,6 +62,7 @@ class _PingScreenState extends State<PingScreen> {
   }
 
   Future<void> _startPing() async {
+    FocusScope.of(context).unfocus();
     final dependencies = AppDependencies.of(context);
     setState(() {
       _running = true;

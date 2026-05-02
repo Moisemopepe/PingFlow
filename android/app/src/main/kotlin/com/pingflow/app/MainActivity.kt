@@ -1,4 +1,4 @@
-package com.example.pingflow
+package com.pingflow.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -142,39 +142,45 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                           ),
                           child: Center(
                             child: Padding(
-                              padding: EdgeInsets.only(top: isShort ? 42 : 54),
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    showValues
-                                        ? animatedSpeed.toStringAsFixed(1)
-                                        : '--',
-                                    style: TextStyle(
-                                      fontSize: isShort ? 32 : 36,
-                                      height: 1,
-                                      fontWeight: FontWeight.w900,
-                                      color: context.pfColors.textPrimary,
+                              padding: EdgeInsets.only(top: isShort ? 0 : 8),
+                              child: Transform.translate(
+                                offset: Offset(0, isShort ? -24 : -34),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      showValues
+                                          ? animatedSpeed.toStringAsFixed(1)
+                                          : '--',
+                                      style: TextStyle(
+                                        fontSize: isShort ? 32 : 36,
+                                        height: 1,
+                                        fontWeight: FontWeight.w900,
+                                        color: context.pfColors.textPrimary,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    'Mbps',
-                                    style: TextStyle(
-                                      color: context.pfColors.textSecondary,
-                                      fontWeight: FontWeight.w600,
+                                    const SizedBox(height: 3),
+                                    Text(
+                                      'Mbps',
+                                      style: TextStyle(
+                                        color: context.pfColors.textSecondary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    _phaseLabel(_progress.phase),
-                                    style: TextStyle(
-                                      color: context.pfColors.textMuted,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      _phaseLabel(_progress.phase),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: context.pfColors.textMuted,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
