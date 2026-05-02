@@ -111,6 +111,21 @@ class AppStrings {
   String get subnetMask => isFrench ? 'Masque de sous-reseau' : 'Subnet Mask';
   String get networkType => isFrench ? 'Type de reseau' : 'Network Type';
   String get backendApi => isFrench ? 'API backend' : 'Backend API';
+  String get connection => isFrench ? 'Connexion' : 'Connection';
+  String get connectionType =>
+      isFrench ? 'Type de connexion' : 'Connection type';
+  String get advancedMode => isFrench ? 'Mode avance' : 'Advanced mode';
+  String get advancedModeSubtitle =>
+      isFrench ? 'Afficher les details techniques' : 'Show technical details';
+  String get technicalDetails =>
+      isFrench ? 'Details techniques' : 'Technical Details';
+  String get dnsResolver => isFrench ? 'Resolveur DNS' : 'DNS resolver';
+  String get backendStatus =>
+      isFrench ? 'Etat du serveur PingFlow' : 'PingFlow server status';
+  String get managedBySystem =>
+      isFrench ? 'Gere par le systeme' : 'Managed by system';
+  String get providedBySystem =>
+      isFrench ? 'Fourni par le systeme' : 'Provided by system';
   String get unableNetworkDetails => isFrench
       ? 'Impossible de charger les details reseau.'
       : 'Unable to load network details.';

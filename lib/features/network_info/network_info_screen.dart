@@ -16,6 +16,7 @@ class NetworkInfoScreen extends StatefulWidget {
 
 class _NetworkInfoScreenState extends State<NetworkInfoScreen> {
   late Future<NetworkInfo> _future;
+  bool _advancedMode = false;
 
   @override
   void didChangeDependencies() {
@@ -69,7 +70,7 @@ class _NetworkInfoScreenState extends State<NetworkInfoScreen> {
                       MediaQuery.paddingOf(context).bottom + 18,
                     ),
                     children: [
-                      SectionTitle(strings.interface),
+                      SectionTitle(strings.connection),
                       const SizedBox(height: 8),
                       PfCard(
                         child: Row(
@@ -96,18 +97,10 @@ class _NetworkInfoScreenState extends State<NetworkInfoScreen> {
                                 ],
                               ),
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  strings.signal,
-                                  style: const TextStyle(
-                                      color: AppColors.textMuted),
-                                ),
-                                Text(info.signal,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.w700)),
-                              ],
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              color: AppColors.accent,
+                              size: 22,
                             ),
                           ],
                         ),
@@ -120,15 +113,40 @@ class _NetworkInfoScreenState extends State<NetworkInfoScreen> {
                         _InfoRow(strings.publicIp, info.publicIp),
                       ]),
                       const SizedBox(height: 14),
-                      SectionTitle(strings.networkDetails),
-                      const SizedBox(height: 8),
-                      _InfoGroup(rows: [
-                        _InfoRow('DNS', info.dns),
-                        _InfoRow(strings.gateway, info.gateway),
-                        _InfoRow(strings.subnetMask, info.subnetMask),
-                        _InfoRow(strings.networkType, info.networkType),
-                        _InfoRow(strings.backendApi, info.backendStatus),
-                      ]),
+                      PfCard(
+                        padding: EdgeInsets.zero,
+                        child: SwitchListTile(
+                          value: _advancedMode,
+                          onChanged: (value) {
+                            setState(() => _advancedMode = value);
+                          },
+                          secondary: const Icon(
+                            Icons.tune_rounded,
+                            color: AppColors.primary,
+                          ),
+                          title: Text(
+                            strings.advancedMode,
+                            style: const TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                          subtitle: Text(strings.advancedModeSubtitle),
+                        ),
+                      ),
+                      if (_advancedMode) ...[
+                        const SizedBox(height: 14),
+                        SectionTitle(strings.technicalDetails),
+                        const SizedBox(height: 8),
+                        _InfoGroup(rows: [
+                          _InfoRow(strings.connectionType, info.networkType),
+                          _InfoRow(strings.signal, strings.managedBySystem),
+                          _InfoRow(strings.dnsResolver, info.dns),
+                          _InfoRow(strings.gateway, strings.providedBySystem),
+                          _InfoRow(
+                            strings.subnetMask,
+                            strings.providedBySystem,
+                          ),
+                          _InfoRow(strings.backendStatus, info.backendStatus),
+                        ]),
+                      ],
                     ],
                   ),
                 ),

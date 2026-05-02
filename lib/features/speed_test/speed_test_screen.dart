@@ -187,10 +187,19 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                     ),
                     const SizedBox(height: 8),
                   ],
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _SpeedMetricCard(
+                  SizedBox(
+                    height: 94,
+                    child: GridView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                        mainAxisExtent: 94,
+                      ),
+                      children: [
+                        _SpeedMetricCard(
                           icon: Icons.arrow_downward_rounded,
                           label: strings.download,
                           value: showValues
@@ -199,10 +208,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                           color: AppColors.purple,
                           samples: _downloadSamples,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _SpeedMetricCard(
+                        _SpeedMetricCard(
                           icon: Icons.arrow_upward_rounded,
                           label: strings.upload,
                           value: showValues
@@ -211,33 +217,36 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                           color: AppColors.accent,
                           samples: _uploadSamples,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _CompactMetricCard(
+                  SizedBox(
+                    height: 64,
+                    child: GridView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                        mainAxisExtent: 64,
+                      ),
+                      children: [
+                        _CompactMetricCard(
                           label: strings.ping,
                           value: showValues ? '${_progress.pingMs} ms' : '--',
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _CompactMetricCard(
+                        _CompactMetricCard(
                           label: strings.jitter,
                           value: showValues ? '${_progress.jitterMs} ms' : '--',
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: _CompactMetricCard(
+                        _CompactMetricCard(
                           label: strings.loss,
                           value: showValues ? '0%' : '--',
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
