@@ -133,6 +133,9 @@ class AppStrings {
       isFrench ? 'Entrer IP ou domaine' : 'Enter IP or domain';
   String get refresh => isFrench ? 'Actualiser' : 'Refresh';
   String get connected => isFrench ? 'Connecte' : 'Connected';
+  String get disconnected => isFrench ? 'Deconnecte' : 'Disconnected';
+  String get networkDiagnosticTool =>
+      isFrench ? 'Outil de diagnostic reseau' : 'Network Diagnostic Tool';
   String get signal => isFrench ? 'Signal' : 'Signal';
   String get interface => isFrench ? 'Interface' : 'Interface';
   String get ipAddresses => isFrench ? 'Adresses IP' : 'IP Addresses';
@@ -161,6 +164,43 @@ class AppStrings {
   String get unableNetworkDetails => isFrench
       ? 'Impossible de charger les details reseau.'
       : 'Unable to load network details.';
+
+  String get supportPingFlow =>
+      isFrench ? 'Soutenir PingFlow' : 'Support PingFlow';
+  String get supportPingFlowSubtitle =>
+      isFrench ? 'Aidez a garder l app gratuite' : 'Help keep the app free';
+  String get supportDescription => isFrench
+      ? 'Aidez-nous a ameliorer l application et a la garder gratuite.'
+      : 'Help us improve the app and keep it free.';
+  String get thankYouSupport => isFrench
+      ? 'Merci pour votre soutien \u2764'
+      : 'Thank you for your support \u2764';
+  String get billingUnavailable => isFrench
+      ? 'Les achats ne sont pas encore disponibles. Configurez les produits dans Google Play Console.'
+      : 'Purchases are not available yet. Configure the products in Google Play Console.';
+  String get feedbackBugReport =>
+      isFrench ? 'Feedback / Rapport de bug' : 'Feedback / Bug Report';
+  String get feedbackBugReportSubtitle =>
+      isFrench ? 'Aidez-nous a nous ameliorer' : 'Help us improve PingFlow';
+  String get privacyDrawerSubtitle =>
+      isFrench ? 'Vos donnees sont importantes' : 'Your data matters';
+  String get aboutDrawerSubtitle =>
+      isFrench ? 'PingFlow et version' : 'PingFlow and version';
+  String get madeWithLove =>
+      isFrench ? 'Fait avec \u2764 pour vous' : 'Made with \u2764';
+  String get topic => isFrench ? 'Sujet' : 'Topic';
+  String get feedback => 'Feedback';
+  String get featureRequest =>
+      isFrench ? 'Demande de fonctionnalite' : 'Feature Request';
+  String get bugReport => isFrench ? 'Rapport de bug' : 'Bug Report';
+  String get emailOptional =>
+      isFrench ? 'Email (optionnel)' : 'Email (optional)';
+  String get message => isFrench ? 'Message' : 'Message';
+  String get messageRequired =>
+      isFrench ? 'Le message est obligatoire.' : 'Message is required.';
+  String get submit => isFrench ? 'Envoyer' : 'Submit';
+  String get feedbackSent =>
+      isFrench ? 'Feedback envoye avec succes' : 'Feedback sent successfully';
 
   String get packets => isFrench ? 'Paquets' : 'Packets';
   String get startPing => isFrench ? 'Demarrer Ping' : 'Start Ping';

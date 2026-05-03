@@ -1,7 +1,7 @@
 name: pingflow
 description: A modern network diagnostic tool for Android.
 publish_to: "none"
-version: 0.2.7+16
+version: 0.2.8+17
 
 environment:
   sdk: ">=3.3.0 <4.0.0"
@@ -13,6 +13,7 @@ dependencies:
     sdk: flutter
 
   connectivity_plus: ^6.1.5
+  in_app_purchase: ^3.2.3
   path: ^1.9.1
   package_info_plus: ^8.3.1
   share_plus: ^10.1.4

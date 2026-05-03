@@ -6,6 +6,7 @@ import '../../features/dashboard/dashboard_screen.dart';
 import '../../features/history/history_screen.dart';
 import '../../features/settings/settings_screen.dart';
 import '../../features/tools/tools_screen.dart';
+import 'pingflow_drawer.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -15,12 +16,15 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   int _index = 0;
 
   @override
   Widget build(BuildContext context) {
     final settings = AppDependencies.of(context).settingsRepository;
     return Scaffold(
+      key: _scaffoldKey,
+      drawer: const PingFlowDrawer(),
       body: ListenableBuilder(
         listenable: settings,
         builder: (context, _) {
@@ -29,7 +33,10 @@ class _AppShellState extends State<AppShell> {
             key: ValueKey(languageCode),
             index: _index,
             children: [
-              DashboardScreen(key: ValueKey('dashboard-$languageCode')),
+              DashboardScreen(
+                key: ValueKey('dashboard-$languageCode'),
+                onOpenDrawer: () => _scaffoldKey.currentState?.openDrawer(),
+              ),
               ToolsScreen(key: ValueKey('tools-$languageCode')),
               HistoryScreen(key: ValueKey('history-$languageCode')),
               SettingsScreen(key: ValueKey('settings-$languageCode')),

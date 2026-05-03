@@ -13,7 +13,9 @@ import '../speed_test/speed_test_screen.dart';
 import '../traceroute/traceroute_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({super.key, this.onOpenDrawer});
+
+  final VoidCallback? onOpenDrawer;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class DashboardScreen extends StatelessWidget {
         leading: IconButton(
           tooltip: strings.menu,
           icon: const Icon(Icons.menu_rounded),
-          onPressed: () {},
+          onPressed: onOpenDrawer,
         ),
         title: const _BrandTitle(),
       ),
