@@ -136,23 +136,27 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                       duration: const Duration(milliseconds: 350),
                       curve: Curves.easeOutCubic,
                       builder: (context, animatedSpeed, _) {
-                        return CustomPaint(
-                          painter: _GaugePainter(
-                            animatedSpeed,
-                            colors: context.pfColors,
-                          ),
-                          child: Center(
-                            child: Padding(
-                              padding: EdgeInsets.only(top: isShort ? 0 : 4),
-                              child: Transform.translate(
-                                offset: Offset(0, isShort ? -48 : -56),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
+                        return Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CustomPaint(
+                              painter: _GaugePainter(
+                                animatedSpeed,
+                                colors: context.pfColors,
+                              ),
+                            ),
+                            Align(
+                              alignment: const Alignment(0, -0.24),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
                                       showValues
                                           ? animatedSpeed.toStringAsFixed(1)
                                           : '--',
+                                      textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: isShort ? 32 : 36,
                                         height: 1,
@@ -160,19 +164,20 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                                         color: context.pfColors.textPrimary,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Mbps',
-                                      style: TextStyle(
-                                        color: context.pfColors.textSecondary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Mbps',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: context.pfColors.textSecondary,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
+                          ],
                         );
                       },
                     ),
