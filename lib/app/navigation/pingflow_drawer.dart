@@ -1,7 +1,4 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../app/pingflow_app.dart';
@@ -237,15 +234,6 @@ class _DrawerActions extends StatelessWidget {
     return Column(
       children: [
         _DrawerItem(
-          icon: Icons.favorite_rounded,
-          color: AppColors.danger,
-          title: strings.supportPingFlow,
-          subtitle: strings.supportPingFlowSubtitle,
-          highlighted: true,
-          onTap: () => _open(context, const SupportPingFlowScreen()),
-        ),
-        const SizedBox(height: 10),
-        _DrawerItem(
           icon: Icons.chat_bubble_outline_rounded,
           color: AppColors.warning,
           title: strings.feedbackBugReport,
@@ -301,7 +289,6 @@ class _DrawerItem extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onTap,
-    this.highlighted = false,
   });
 
   final IconData icon;
@@ -309,14 +296,12 @@ class _DrawerItem extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback onTap;
-  final bool highlighted;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.pfColors;
     return Material(
-      color:
-          highlighted ? AppColors.accent.withValues(alpha: 0.08) : colors.card,
+      color: colors.card,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
@@ -326,9 +311,7 @@ class _DrawerItem extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: highlighted
-                  ? AppColors.accent.withValues(alpha: 0.24)
-                  : colors.stroke,
+              color: colors.stroke,
             ),
             boxShadow: [
               BoxShadow(
@@ -357,8 +340,7 @@ class _DrawerItem extends StatelessWidget {
                     Text(
                       title,
                       style: TextStyle(
-                        color:
-                            highlighted ? AppColors.accent : colors.textPrimary,
+                        color: colors.textPrimary,
                         fontWeight: FontWeight.w900,
                         fontSize: 15,
                       ),
@@ -419,186 +401,6 @@ class _DrawerFooter extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-}
-
-class SupportPingFlowScreen extends StatefulWidget {
-  const SupportPingFlowScreen({super.key});
-
-  @override
-  State<SupportPingFlowScreen> createState() => _SupportPingFlowScreenState();
-}
-
-class _SupportPingFlowScreenState extends State<SupportPingFlowScreen> {
-  static const _productIds = {
-    'pingflow_support_1',
-    'pingflow_support_5',
-    'pingflow_support_10',
-  };
-
-  final _iap = InAppPurchase.instance;
-  late final StreamSubscription<List<PurchaseDetails>> _purchaseSubscription;
-  final Map<String, ProductDetails> _products = {};
-  bool _billingReady = false;
-  bool _loadingProducts = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _purchaseSubscription = _iap.purchaseStream.listen(_handlePurchases);
-    _loadProducts();
-  }
-
-  @override
-  void dispose() {
-    _purchaseSubscription.cancel();
-    super.dispose();
-  }
-
-  Future<void> _loadProducts() async {
-    final available = await _iap.isAvailable();
-    if (!mounted) return;
-    if (!available) {
-      setState(() {
-        _billingReady = false;
-        _loadingProducts = false;
-      });
-      return;
-    }
-
-    final response = await _iap.queryProductDetails(_productIds);
-    if (!mounted) return;
-    setState(() {
-      _billingReady = true;
-      _loadingProducts = false;
-      _products
-        ..clear()
-        ..addEntries(
-            response.productDetails.map((item) => MapEntry(item.id, item)));
-    });
-  }
-
-  Future<void> _support(String productId) async {
-    final strings = AppStrings.of(context);
-    final product = _products[productId];
-    if (!_billingReady || product == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(strings.billingUnavailable),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
-    await _iap.buyConsumable(
-      purchaseParam: PurchaseParam(productDetails: product),
-      autoConsume: true,
-    );
-  }
-
-  Future<void> _handlePurchases(List<PurchaseDetails> purchases) async {
-    for (final purchase in purchases) {
-      if (purchase.status == PurchaseStatus.purchased ||
-          purchase.status == PurchaseStatus.restored) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppStrings.of(context).thankYouSupport),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      }
-      if (purchase.pendingCompletePurchase) {
-        await _iap.completePurchase(purchase);
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final strings = AppStrings.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(strings.supportPingFlow)),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          PfCard(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(
-                  Icons.favorite_rounded,
-                  color: AppColors.danger,
-                  size: 36,
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  strings.supportPingFlow,
-                  style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  strings.supportDescription,
-                  style: TextStyle(
-                    color: context.pfColors.textSecondary,
-                    height: 1.45,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: [
-                    _DonationButton(
-                      label: '\$1',
-                      productId: 'pingflow_support_1',
-                    ),
-                    _DonationButton(
-                      label: '\$5',
-                      productId: 'pingflow_support_5',
-                    ),
-                    _DonationButton(
-                      label: '\$10',
-                      productId: 'pingflow_support_10',
-                    ),
-                  ],
-                ),
-                if (_loadingProducts) ...[
-                  const SizedBox(height: 14),
-                  LinearProgressIndicator(
-                    color: AppColors.primary,
-                    backgroundColor: context.pfColors.stroke,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DonationButton extends StatelessWidget {
-  const _DonationButton({required this.label, required this.productId});
-
-  final String label;
-  final String productId;
-
-  @override
-  Widget build(BuildContext context) {
-    return FilledButton.icon(
-      onPressed: () => context
-          .findAncestorStateOfType<_SupportPingFlowScreenState>()
-          ?._support(productId),
-      icon: const Icon(Icons.favorite_rounded),
-      label: Text(label),
     );
   }
 }

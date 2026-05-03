@@ -7,6 +7,86 @@ const PORT = Number(process.env.PORT || 8787);
 const MAX_SPEED_BYTES = 128 * 1024 * 1024;
 const HOST_PATTERN = /^[a-zA-Z0-9.-]{1,253}$/;
 const PING_MODE = process.env.PINGFLOW_PING_MODE || 'auto';
+const PRIVACY_POLICY_HTML = `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PingFlow Privacy Policy</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+      color: #14213d;
+      background: #f7f9fc;
+    }
+    main {
+      max-width: 840px;
+      margin: 0 auto;
+      padding: 40px 20px 56px;
+    }
+    h1, h2 {
+      line-height: 1.2;
+      color: #0b1324;
+    }
+    h1 {
+      font-size: 34px;
+      margin-bottom: 8px;
+    }
+    h2 {
+      margin-top: 32px;
+      font-size: 22px;
+    }
+    .updated {
+      color: #5f6b7a;
+      font-weight: 700;
+    }
+    a {
+      color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>PingFlow Privacy Policy</h1>
+    <p class="updated">Effective date: May 3, 2026</p>
+
+    <p>PingFlow is a network diagnostic application that helps users test connectivity, latency, routing, and connection speed.</p>
+
+    <h2>Data processed by the app</h2>
+    <p>PingFlow may process the following technical data only to provide network diagnostic features:</p>
+    <ul>
+      <li>Domains or IP addresses entered by the user for ping and traceroute tests.</li>
+      <li>Network diagnostic results, such as latency, route hops, speed test results, and backend availability.</li>
+      <li>Public IP address lookup results used to display network information.</li>
+      <li>Local app settings, such as theme and language preferences.</li>
+      <li>Local diagnostic history saved on the user's device.</li>
+    </ul>
+
+    <p>PingFlow does not sell personal data. PingFlow does not use advertising SDKs.</p>
+
+    <h2>Backend and third-party services</h2>
+    <p>Some diagnostics are processed through the PingFlow backend API. When a user starts a diagnostic test, the entered domain or IP address may be sent to the backend so the requested test can run.</p>
+    <p>PingFlow may use a public IP lookup service to display the device's public IP address.</p>
+
+    <h2>Local storage</h2>
+    <p>Diagnostic history and app settings are stored locally on the user's device. Users can clear diagnostic history from the app.</p>
+
+    <h2>Feedback</h2>
+    <p>The app may include a feedback form. In the current version, feedback is handled locally in the app and is not submitted to a server.</p>
+
+    <h2>Data sharing</h2>
+    <p>PingFlow does not sell user data and does not share user data for advertising. Technical data may be transmitted to the PingFlow backend only when required to provide diagnostic features requested by the user.</p>
+
+    <h2>Security</h2>
+    <p>PingFlow uses HTTPS for production backend communication where available.</p>
+
+    <h2>Contact</h2>
+    <p>For privacy questions, contact the developer through the support email listed on the PingFlow Google Play Store listing.</p>
+  </main>
+</body>
+</html>`;
 
 function json(res, status, payload) {
   if (res.headersSent) {
@@ -18,6 +98,15 @@ function json(res, status, payload) {
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(body),
     'Access-Control-Allow-Origin': '*',
+  });
+  res.end(body);
+}
+
+function html(res, status, body) {
+  res.writeHead(status, {
+    'Content-Type': 'text/html; charset=utf-8',
+    'Content-Length': Buffer.byteLength(body),
+    'Cache-Control': 'public, max-age=300',
   });
   res.end(body);
 }
@@ -362,6 +451,9 @@ const server = http.createServer((req, res) => {
   try {
     if (req.method === 'GET' && url.pathname === '/health') {
       return json(res, 200, { status: 'ok', platform: process.platform });
+    }
+    if (req.method === 'GET' && url.pathname === '/privacy-policy') {
+      return html(res, 200, PRIVACY_POLICY_HTML);
     }
     if (req.method === 'GET' && url.pathname === '/api/network-info') {
       return json(res, 200, { interfaces: networkInterfaces() });

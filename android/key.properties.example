@@ -1,0 +1,4 @@
+storePassword=change-me
+keyPassword=change-me
+keyAlias=pingflow-upload
+storeFile=app/pingflow-upload-key.jks
