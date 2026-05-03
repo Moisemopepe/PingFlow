@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/pingflow_app.dart';
 import '../../app/theme/app_theme.dart';
@@ -182,6 +183,9 @@ class AboutPingFlowScreen extends StatelessWidget {
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
 
+  static final Uri _privacyPolicyUri =
+      Uri.parse('https://pingflow-api.onrender.com/privacy-policy');
+
   @override
   Widget build(BuildContext context) {
     final strings = AppStrings.of(context);
@@ -213,6 +217,18 @@ class PrivacyPolicyScreen extends StatelessWidget {
                   style: TextStyle(
                     color: context.pfColors.textSecondary,
                     height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => launchUrl(
+                      _privacyPolicyUri,
+                      mode: LaunchMode.externalApplication,
+                    ),
+                    icon: const Icon(Icons.open_in_new_rounded),
+                    label: Text(strings.onlinePrivacyPolicy),
                   ),
                 ),
               ],

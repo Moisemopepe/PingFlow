@@ -39,6 +39,9 @@ class AppStrings {
       isFrench ? 'A propos de PingFlow' : 'About PingFlow';
   String get privacyPolicy =>
       isFrench ? 'Politique de confidentialite' : 'Privacy Policy';
+  String get onlinePrivacyPolicy => isFrench
+      ? 'Voir la politique en ligne'
+      : 'View online privacy policy';
   String get shareApp => isFrench ? 'Partager l app' : 'Share App';
   String get version => isFrench ? 'Version' : 'Version';
   String get developer => isFrench ? 'Developpeur' : 'Developer';
