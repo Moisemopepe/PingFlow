@@ -27,6 +27,11 @@ class RealDiagnosticService implements DiagnosticService {
 
   final Uri _baseUri;
   final HttpClient _client;
+  static const _speedConnections = 4;
+  static const _speedMinDuration = Duration(seconds: 7);
+  static const _speedWarmup = Duration(milliseconds: 700);
+  static const _downloadBytesPerConnection = 96 * 1024 * 1024;
+  static const _uploadChunkSize = 256 * 1024;
 
   @override
   Stream<PingReply> ping(String host, {int count = 10}) async* {
@@ -96,7 +101,7 @@ class RealDiagnosticService implements DiagnosticService {
     var download = 0.0;
     var upload = 0.0;
 
-    await for (final value in _measureDownloadStream(bytes: 8 * 1024 * 1024)) {
+    await for (final value in _measureParallelDownloadStream()) {
       download = value;
       yield SpeedProgress(
         phase: SpeedTestPhase.download,
@@ -106,7 +111,7 @@ class RealDiagnosticService implements DiagnosticService {
       );
     }
 
-    await for (final value in _measureUploadStream(bytes: 4 * 1024 * 1024)) {
+    await for (final value in _measureParallelUploadStream()) {
       upload = value;
       yield SpeedProgress(
         phase: SpeedTestPhase.upload,
@@ -227,47 +232,124 @@ class RealDiagnosticService implements DiagnosticService {
     }
   }
 
-  Stream<double> _measureDownloadStream({required int bytes}) async* {
-    final request = await _client.getUrl(_uri('/api/speed/download', {
-      'bytes': '$bytes',
-    }));
+  Stream<double> _measureParallelDownloadStream() {
+    return _measureForDuration(
+      phase: 'download',
+      connections: _speedConnections,
+      minDuration: _speedMinDuration,
+      worker: _downloadWorker,
+    );
+  }
+
+  Stream<double> _measureParallelUploadStream() {
+    return _measureForDuration(
+      phase: 'upload',
+      connections: _speedConnections,
+      minDuration: _speedMinDuration,
+      worker: _uploadWorker,
+    );
+  }
+
+  Stream<double> _measureForDuration({
+    required String phase,
+    required int connections,
+    required Duration minDuration,
+    required Future<void> Function(
+      DateTime deadline,
+      void Function(int bytes) addBytes,
+    ) worker,
+  }) async* {
     final started = DateTime.now();
-    final response = await request.close().timeout(const Duration(seconds: 20));
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw const HttpException('Download speed test failed');
+    final deadline = started.add(minDuration);
+    var transferred = 0;
+    Object? workerError;
+
+    void addBytes(int bytes) {
+      transferred += bytes;
     }
-    var received = 0;
-    await for (final chunk in response) {
-      received += chunk.length;
-      yield _mbps(received, DateTime.now().difference(started));
+
+    final workers = List.generate(
+      connections,
+      (_) => worker(deadline, addBytes).catchError((Object error) {
+        workerError ??= error;
+      }),
+    );
+
+    while (DateTime.now().isBefore(deadline)) {
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+      if (workerError != null) {
+        throw HttpException('$phase speed test failed: $workerError');
+      }
+      final elapsed = DateTime.now().difference(started);
+      if (elapsed >= _speedWarmup) {
+        yield _mbps(transferred, elapsed);
+      }
+    }
+
+    await Future.wait(workers).timeout(const Duration(seconds: 8));
+    if (workerError != null) {
+      throw HttpException('$phase speed test failed: $workerError');
+    }
+    yield _mbps(transferred, DateTime.now().difference(started));
+  }
+
+  Future<void> _downloadWorker(
+    DateTime deadline,
+    void Function(int bytes) addBytes,
+  ) async {
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 8);
+    try {
+      while (DateTime.now().isBefore(deadline)) {
+        final request = await client.getUrl(_uri('/api/speed/download', {
+          'bytes': '$_downloadBytesPerConnection',
+          'nonce': DateTime.now().microsecondsSinceEpoch.toString(),
+        }));
+        request.headers.set(HttpHeaders.cacheControlHeader, 'no-store');
+        final response =
+            await request.close().timeout(const Duration(seconds: 25));
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw const HttpException('Download speed test failed');
+        }
+        await for (final chunk in response) {
+          addBytes(chunk.length);
+          if (!DateTime.now().isBefore(deadline)) break;
+        }
+      }
+    } finally {
+      client.close(force: true);
     }
   }
 
-  Stream<double> _measureUploadStream({required int bytes}) async* {
-    final payload = Uint8List(bytes);
+  Future<void> _uploadWorker(
+    DateTime deadline,
+    void Function(int bytes) addBytes,
+  ) async {
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 8);
+    final payload = Uint8List(_uploadChunkSize);
     for (var i = 0; i < payload.length; i++) {
       payload[i] = i % 251;
     }
-    final request = await _client.postUrl(_uri('/api/speed/upload'));
-    request.headers.contentType = ContentType.binary;
-    request.headers.contentLength = payload.length;
-    final started = DateTime.now();
-    const chunkSize = 64 * 1024;
-    var sent = 0;
-    while (sent < payload.length) {
-      var end = sent + chunkSize;
-      if (end > payload.length) end = payload.length;
-      request.add(payload.sublist(sent, end));
-      sent = end;
-      yield _mbps(sent, DateTime.now().difference(started));
-      await Future<void>.delayed(Duration.zero);
+
+    try {
+      while (DateTime.now().isBefore(deadline)) {
+        final request = await client.postUrl(_uri('/api/speed/upload'));
+        request.headers.contentType = ContentType.binary;
+        request.headers.chunkedTransferEncoding = true;
+        while (DateTime.now().isBefore(deadline)) {
+          request.add(payload);
+          await request.flush();
+          addBytes(payload.length);
+        }
+        final response =
+            await request.close().timeout(const Duration(seconds: 25));
+        final body = await response.transform(utf8.decoder).join();
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          throw HttpException(_extractError(body));
+        }
+      }
+    } finally {
+      client.close(force: true);
     }
-    final response = await request.close().timeout(const Duration(seconds: 20));
-    final body = await response.transform(utf8.decoder).join();
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw HttpException(_extractError(body));
-    }
-    yield _mbps(bytes, DateTime.now().difference(started));
   }
 
   double _mbps(int bytes, Duration elapsed) {

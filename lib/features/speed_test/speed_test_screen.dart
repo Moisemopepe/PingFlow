@@ -115,7 +115,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
         builder: (context, constraints) {
           final isWide = constraints.maxWidth >= 700;
           final isShort = constraints.maxHeight < 760;
-          final gaugeHeight = isWide ? 320.0 : (isShort ? 230.0 : 252.0);
+          final gaugeHeight = isWide ? 300.0 : (isShort ? 218.0 : 238.0);
           final contentWidth = isWide ? 680.0 : double.infinity;
 
           return Center(
@@ -126,7 +126,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                   isWide ? 22 : 12,
                   0,
                   isWide ? 22 : 12,
-                  18,
+                  20,
                 ),
                 children: [
                   SizedBox(
@@ -143,9 +143,9 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                           ),
                           child: Center(
                             child: Padding(
-                              padding: EdgeInsets.only(top: isShort ? 0 : 8),
+                              padding: EdgeInsets.only(top: isShort ? 0 : 4),
                               child: Transform.translate(
-                                offset: Offset(0, isShort ? 36 : 44),
+                                offset: Offset(0, isShort ? -48 : -56),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -160,7 +160,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                                         color: context.pfColors.textPrimary,
                                       ),
                                     ),
-                                    const SizedBox(height: 3),
+                                    const SizedBox(height: 8),
                                     Text(
                                       'Mbps',
                                       style: TextStyle(
@@ -168,24 +168,6 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      _phaseLabel(_progress.phase),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: _phaseColor(_progress.phase),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w900,
-                                      ),
-                                    ),
-                                    if (showValues &&
-                                        _progress.phase !=
-                                            SpeedTestPhase.idle) ...[
-                                      const SizedBox(height: 6),
-                                      _QualityChip(quality: quality),
-                                    ],
                                   ],
                                 ),
                               ),
@@ -195,6 +177,30 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                       },
                     ),
                   ),
+                  Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _phaseLabel(_progress.phase),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: _phaseColor(_progress.phase),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        if (showValues &&
+                            _progress.phase != SpeedTestPhase.idle) ...[
+                          const SizedBox(height: 7),
+                          _QualityChip(quality: quality),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 14),
                   if (_error != null) ...[
                     Text(
                       _error!,
@@ -203,7 +209,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                     const SizedBox(height: 8),
                   ],
                   SizedBox(
-                    height: 94,
+                    height: 88,
                     child: GridView(
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
@@ -211,7 +217,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                         crossAxisCount: 2,
                         crossAxisSpacing: 8,
                         mainAxisSpacing: 8,
-                        mainAxisExtent: 94,
+                        mainAxisExtent: 88,
                       ),
                       children: [
                         _SpeedMetricCard(
@@ -242,7 +248,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                   ),
                   const SizedBox(height: 8),
                   SizedBox(
-                    height: 64,
+                    height: 66,
                     child: GridView(
                       physics: const NeverScrollableScrollPhysics(),
                       gridDelegate:
@@ -250,7 +256,7 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                         crossAxisCount: 3,
                         crossAxisSpacing: 8,
                         mainAxisSpacing: 8,
-                        mainAxisExtent: 64,
+                        mainAxisExtent: 66,
                       ),
                       children: [
                         _CompactMetricCard(
@@ -277,30 +283,22 @@ class _SpeedTestScreenState extends State<SpeedTestScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 18),
+                  PrimaryButton(
+                    label: _buttonLabel(strings),
+                    icon: _running
+                        ? Icons.stop_rounded
+                        : result != null
+                            ? Icons.restart_alt_rounded
+                            : Icons.play_arrow_rounded,
+                    color: _running ? AppColors.danger : AppColors.primary,
+                    onPressed: _running ? _stop : _start,
+                  ),
                 ],
               ),
             ),
           );
         },
-      ),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(12, 8, 12, 12),
-        child: Center(
-          heightFactor: 1,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: PrimaryButton(
-              label: _buttonLabel(strings),
-              icon: _running
-                  ? Icons.stop_rounded
-                  : result != null
-                      ? Icons.restart_alt_rounded
-                      : Icons.play_arrow_rounded,
-              color: _running ? AppColors.danger : AppColors.primary,
-              onPressed: _running ? _stop : _start,
-            ),
-          ),
-        ),
       ),
     );
   }
@@ -388,7 +386,7 @@ class _SpeedMetricCard extends StatelessWidget {
     final accentColor = color ?? context.pfColors.textMuted;
 
     return Container(
-      height: 94,
+      height: 88,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: context.pfColors.card,
@@ -462,7 +460,7 @@ class _CompactMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 64,
+      height: 66,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
       decoration: BoxDecoration(
         color: context.pfColors.card,
@@ -610,7 +608,6 @@ class _GaugePainter extends CustomPainter {
       ..color = colors.textPrimary.withValues(alpha: 0.78)
       ..strokeWidth = 1.4
       ..strokeCap = StrokeCap.round;
-    final textPainter = TextPainter(textDirection: TextDirection.ltr);
 
     for (var i = 0; i <= 10; i++) {
       final progress = i / 10;
@@ -624,23 +621,6 @@ class _GaugePainter extends CustomPainter {
         center.dy + radius * (i.isEven ? 0.79 : 0.83) * math.sin(angle),
       );
       canvas.drawLine(inner, outer, tickPaint);
-
-      if (i.isEven) {
-        textPainter.text = TextSpan(
-          text: (i * 50).toString(),
-          style: TextStyle(
-            color: colors.textSecondary,
-            fontSize: 9,
-            fontWeight: FontWeight.w700,
-          ),
-        );
-        textPainter.layout();
-        final labelOffset = Offset(
-          center.dx + radius * 0.66 * math.cos(angle) - textPainter.width / 2,
-          center.dy + radius * 0.66 * math.sin(angle) - textPainter.height / 2,
-        );
-        textPainter.paint(canvas, labelOffset);
-      }
     }
   }
 

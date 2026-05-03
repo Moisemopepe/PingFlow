@@ -4,7 +4,7 @@ const os = require('os');
 const { spawn } = require('child_process');
 
 const PORT = Number(process.env.PORT || 8787);
-const MAX_SPEED_BYTES = 64 * 1024 * 1024;
+const MAX_SPEED_BYTES = 128 * 1024 * 1024;
 const HOST_PATTERN = /^[a-zA-Z0-9.-]{1,253}$/;
 const PING_MODE = process.env.PINGFLOW_PING_MODE || 'auto';
 
@@ -297,6 +297,7 @@ function handleDownload(res, url) {
   res.writeHead(200, {
     'Content-Type': 'application/octet-stream',
     'Content-Length': total,
+    'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
   });
 
