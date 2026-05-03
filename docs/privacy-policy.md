@@ -44,5 +44,4 @@ For privacy questions, contact:
 
 Moise Mopepe
 
-Email: replace-with-your-support-email@example.com
-
+Email: moisemopepe3@gmail.com

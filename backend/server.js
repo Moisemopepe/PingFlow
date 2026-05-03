@@ -83,7 +83,7 @@ const PRIVACY_POLICY_HTML = `<!doctype html>
     <p>PingFlow uses HTTPS for production backend communication where available.</p>
 
     <h2>Contact</h2>
-    <p>For privacy questions, contact the developer through the support email listed on the PingFlow Google Play Store listing.</p>
+    <p>For privacy questions, contact the developer at <a href="mailto:moisemopepe3@gmail.com">moisemopepe3@gmail.com</a>.</p>
   </main>
 </body>
 </html>`;

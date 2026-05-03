@@ -71,8 +71,8 @@ class AppStrings {
       ? 'Decouvrez PingFlow, un outil moderne de diagnostic reseau : https://play.google.com/store/apps/details?id=com.pingflow.app'
       : 'Check out PingFlow, a modern network diagnostic tool: https://play.google.com/store/apps/details?id=com.pingflow.app';
   String get privacyDescription => isFrench
-      ? 'PingFlow respecte votre vie privee. L application ne collecte pas d informations personnelles. Les tests de diagnostic reseau sont effectues uniquement pour mesurer la connectivite, la latence, les sauts de route et la vitesse de connexion. Certains tests peuvent utiliser une API backend pour traiter les diagnostics reseau. Aucune donnee personnelle n est vendue ou partagee.'
-      : 'PingFlow respects your privacy. The app does not collect personal information. Network diagnostic tests are performed only to measure connectivity, latency, route hops, and connection speed. Some tests may use a backend API to process network diagnostics. No personal data is sold or shared.';
+      ? 'PingFlow respecte votre vie privee. L application ne collecte pas d informations personnelles. Les tests de diagnostic reseau sont effectues uniquement pour mesurer la connectivite, la latence, les sauts de route et la vitesse de connexion. Certains tests peuvent utiliser une API backend pour traiter les diagnostics reseau. Aucune donnee personnelle n est vendue ou partagee.\n\nPour toute question de confidentialite, contactez : moisemopepe3@gmail.com'
+      : 'PingFlow respects your privacy. The app does not collect personal information. Network diagnostic tests are performed only to measure connectivity, latency, route hops, and connection speed. Some tests may use a backend API to process network diagnostics. No personal data is sold or shared.\n\nFor privacy questions, contact: moisemopepe3@gmail.com';
 
   String get clearHistory => isFrench ? 'Effacer historique' : 'Clear history';
   String get deleteAllHistory =>
